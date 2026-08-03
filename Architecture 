@@ -1,0 +1,33 @@
+[Scheduler] → START
+     ↓
+scan_sources (tool node — calls job board APIs/search)
+     ↓
+dedupe_check (tool node — compare against seen-gigs store)
+     ↓
+score_fit (deterministic node — with LLM)
+     ↓
+   [conditional edge: does anything pass threshold?]
+     ↓ yes                    ↓ no
+rank_top_n              END (empty digest)
+     ↓
+draft_pitch (LLM node, one per gig)
+     ↓
+human_review (interrupt — waits for your approval)
+     ↓
+   [conditional edge: approved?]
+     ↓ yes                    ↓ no/edited
+send_email (MCP tool node)   discard / requeue
+     ↓
+END
+
+
+Remember to add to the data base once a post is handled  ( mostly in send email)
+
+
+[Your existing pipeline] → writes JSON snapshots at each stage
+         ↓
+[FastAPI backend] → reads those files, exposes them as endpoints, accepts edits
+         ↓
+[React frontend] → fetches from the API, shows 3 tabs, lets you edit/approve drafts
+         ↓
+edits get written back to review_queue.json → resume_review.py picks them up, unchanged
