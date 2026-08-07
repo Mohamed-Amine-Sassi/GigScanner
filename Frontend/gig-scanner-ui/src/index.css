@@ -1,0 +1,49 @@
+:root {
+  --bg: #0F1420;
+  --surface: #171D2C;
+  --surface-hover: #1E2638;
+  --border: #262E42;
+  --text: #E9ECF4;
+  --text-muted: #8792AC;
+  --strong: #FFB020;
+  --moderate: #4FD1C5;
+  --weak: #5B6479;
+  --danger: #FF6B6B;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+
+button, select, textarea {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--strong);
+  outline-offset: 2px;
+}
+
+@keyframes sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
