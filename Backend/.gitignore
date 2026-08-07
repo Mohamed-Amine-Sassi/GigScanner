@@ -1,5 +1,0 @@
-.env
-checkpoints.db
-ranked_postings.json
-raw_postings.json
-review_queue.json
