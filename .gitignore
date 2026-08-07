@@ -1,0 +1,6 @@
+Backend/.env
+Backend/checkpoints.db
+Backend/ranked_postings.json
+Backend/raw_postings.json
+Backend/review_queue.json
+.venv
