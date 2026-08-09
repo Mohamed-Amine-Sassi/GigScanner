@@ -21,6 +21,29 @@ def detect_contact_method(description: str, url: str) -> dict:
     return {"method": "apply_link", "value": url}
 
 
+CLOSED_PATTERNS = [
+    "no longer accepting applications",
+    "no longer accepting job applications",
+    "this job is no longer available",
+    "position has been filled",
+    "job posting is closed",
+    "this position is no longer accepting",
+]
+
+
+def is_linkedin_job_url(url: str) -> bool:
+    """Keep only actual job postings, drop profiles/companies/articles/etc."""
+    return "/jobs/view/" in url
+
+
+def is_closed_posting(content: str) -> bool:
+    """Best-effort check against text snippets for common 'closed' phrasing."""
+    if not content:
+        return False
+    text = content.lower()
+    return any(phrase in text for phrase in CLOSED_PATTERNS)
+
+
 def scan_tanitjobs(query: str = "Agentic Ai freelance Job"):
     response = client.search(
         query=query,
@@ -39,7 +62,9 @@ def scan_linkedin(query: str):
         max_results=10,
         time_range="week", 
     )
-    return response["results"]
+    results = response["results"]
+    # drop profiles (/in/), companies (/company/), articles (/pulse/), etc.
+    return [r for r in results if is_linkedin_job_url(r["url"])]
 
 import feedparser
 
@@ -52,6 +77,8 @@ def scan_weworkremotely(category: str ):
     for entry in feed.entries:
         raw_description = entry.get("summary", "")
         description = clean_html(raw_description)
+        if is_closed_posting(description):
+            continue
         postings.append({
             "title": entry.title,
             "description": description,
@@ -65,18 +92,21 @@ def scan_weworkremotely(category: str ):
     return postings
 
 def normalize_tavily_results(results, source_name):
-    return [
-        {
+    postings = []
+    for r in results:
+        content = clean_html(r["content"])
+        if is_closed_posting(content):
+            continue  # skip closed/expired postings
+        postings.append({
             "title": r["title"],
-            "description": clean_html(r["content"]),
+            "description": content,
             "url": r["url"],
             "source": source_name,
             "budget_text": None,
             "posted_date": None,
-            "contact": detect_contact_method(clean_html(r["content"]), r["url"]),
-        }
-        for r in results
-    ]
+            "contact": detect_contact_method(content, r["url"]),
+        })
+    return postings
 
 def scan_indeed(query: str):
     response = client.search(
@@ -111,15 +141,15 @@ def scan_keejob(query: str = "Agentic Ai freelance Job"):
     return response["results"]
 
 
-def scan_freelancer(query: str):
-    response = client.search(
-        query=query,
-        include_domains=["freelancer.com"],
-        search_depth="basic",
-        max_results=10,
-        time_range="week",
-    )
-    return response["results"]
+#def scan_freelancer(query: str):
+#    response = client.search(
+#        query=query,
+#        include_domains=["freelancer.com"],
+#        search_depth="basic",
+#        max_results=10,
+#        time_range="week",
+#   )
+#   return response["results"]
 
 def scan_sources_node(state):
     postings = []
@@ -130,7 +160,7 @@ def scan_sources_node(state):
     indeed_results = scan_indeed("Agentic Ai Jobs freelance remote")
     glassdoor_results = scan_glassdoor("Agentic Ai Jobs freelance remote")
     keejob_results = scan_keejob("Agentic Ai Jobs freelance")
-    freelancer_results = scan_freelancer("Agentic Ai freelance project")
+    #freelancer_results = scan_freelancer("Agentic Ai freelance project")
 
     postings.extend(wwr_results)
     postings.extend(normalize_tavily_results(tanitjobs_results, "tanitjobs"))
@@ -138,7 +168,7 @@ def scan_sources_node(state):
     postings.extend(normalize_tavily_results(indeed_results, "Indeed"))
     postings.extend(normalize_tavily_results(glassdoor_results, "Glassdoor"))
     postings.extend(normalize_tavily_results(keejob_results, "Keejob"))
-    postings.extend(normalize_tavily_results(freelancer_results, "Freelancer"))
+    #postings.extend(normalize_tavily_results(freelancer_results, "Freelancer"))
 
     state["raw_postings"] = postings
     return state

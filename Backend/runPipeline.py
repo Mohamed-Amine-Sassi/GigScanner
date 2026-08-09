@@ -1,6 +1,7 @@
 # run_pipeline.py
+import asyncio
 import json
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from Main import build_graph  # your existing build_graph(), unchanged
 
@@ -12,13 +13,13 @@ def dump_json(data, filename):
         json.dump(data, f, indent=2, ensure_ascii=False, default=str)
 
 
-def main():
-    with SqliteSaver.from_conn_string("checkpoints.db") as checkpointer:
-        app = build_graph(checkpointer=checkpointer)
-        result = app.invoke({}, config=THREAD_CONFIG)
+async def main():
+    async with AsyncSqliteSaver.from_conn_string("checkpoints.db") as checkpointer:
+        app = await build_graph(checkpointer=checkpointer)
+        result = await app.ainvoke({}, config=THREAD_CONFIG)
 
         # snapshot the state so the React UI has something to read
-        state_snapshot = app.get_state(THREAD_CONFIG).values
+        state_snapshot = (await app.aget_state(THREAD_CONFIG)).values
         scored = state_snapshot.get("scored_postings") or state_snapshot.get("raw_postings", [])
         dump_json(scored, "raw_postings.json")
         dump_json(state_snapshot.get("top_candidates", []), "ranked_postings.json")
@@ -51,4 +52,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
