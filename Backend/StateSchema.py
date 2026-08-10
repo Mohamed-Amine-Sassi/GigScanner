@@ -2,6 +2,7 @@
 from typing import TypedDict
 
 class GigScannerState(TypedDict):
+    user_id: str
     raw_postings: list[dict]       # from scan_sources
     new_postings: list[dict]       # after dedupe
     scored_postings: list[dict]    # gig + fit_score + reasons

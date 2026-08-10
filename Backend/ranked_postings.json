@@ -1,40 +1,97 @@
 [
   {
-    "title": "Stripe: Backend Engineer, AI Security",
-    "description": "Headquarters: New York, San Francisco, Seattle, or Remote (US/Canada) Who we are About Stripe Stripe is a financial infrastructure platform for businesses. Millions of companies—from the world's largest enterprises to the most ambitious startups—use Stripe to accept payments, grow their revenue, and accelerate new business opportunities. Our mission is to increase the GDP of the internet, and we have a staggering amount of work ahead. That means you have an unprecedented opportunity to put the global economy within everyone's reach while doing the most important work of your career. About the team AI is moving fast and Stripe is moving fast to adopt it. But we need to make sure we do all of this safely, and for most of these tools, enterprise-grade security isn't just available off the shelf. That's where the AI security team comes in—we're responsible for building and partnering to create the right security primitives to enable Stripe to move fast safely. This is a team that works in the low-level components of our AI stack, so both infrastructure and security experience are pluses. This space is moving fast, so being comfortable with ambiguity and changes in priority is a must. This is a foundational role—you'd be the first engineer on the team. What you'll do Engineers on this team do a mixture of partnering and advising with teams building AI infrastructure and products, and building security infrastructure primitives for AI. One of our major focuses is building a security tooling layer that sits in the inference path, providing detection and protection against AI-specific threats like prompt injection, jailbreaks, and tool misuse. Responsibilities • Build security frameworks integrated with our core AI infrastructure • Design and implement defenses against AI-specific threats like prompt injection and jailbreaks • Collaborate with other engineering teams to ensure our AI infrastructure and products are built securely • Support other engineering teams in integrating security primitives • Uphold our high engineering standards and improve our codebase and processes • Design and build systems that help define the state of the art for AI security Who you are We're looking for someone who meets the minimum requirements to be considered for the role. If you meet these requirements, you are encouraged to apply. The preferred qualifications are a bonus, not a requirement. Minimum requirements • 5+ years of software development experience • Experience independently designing and developing medium-to-large projects • Experience working collaboratively across multiple engineering teams • Experience writing high-quality code in a major programming language • Ability to drive clear next steps when working in an ambiguous environment • Ability to think creatively and reason clearly in a complex problem domain Preferred qualifications • Experience developing, deploying, and maintaining reliable infrastructure systems • Experience in security engineering • Experience building AI agents or LLM-based systems To apply: https://weworkremotely.com/remote-jobs/stripe-backend-engineer-ai-security",
-    "url": "https://weworkremotely.com/remote-jobs/stripe-backend-engineer-ai-security",
-    "source": "weworkremotely",
+    "title": "Flexible Rag Ai Jobs – Apply Today to Work From Home in Remote (August 7, 2026)",
+    "description": "Design agentic AI workflows for structured logistics operations, with clear escalation paths to human review or RPA where deterministic handling is required.\n\n       View all Cargomatic jobs in Remote - Remote jobs - AI Developer jobs in Remote\n       Salary Search: AI Engineer salaries in Remote\n       See popular questions & answers about Cargomatic\n\n   \n### GenAI Engineer (LLM, RAG & AI Agents)\n\nEasily apply      \n\ninteraslabs Remote     \n\n       $60 - $65 an hour",
+    "url": "https://www.indeed.com/q-rag-ai-l-remote-jobs.html",
+    "source": "Indeed",
     "budget_text": null,
-    "posted_date": "Wed, 22 Jul 2026 07:01:06 +0000",
+    "posted_date": null,
     "contact": {
       "method": "apply_link",
-      "value": "https://weworkremotely.com/remote-jobs/stripe-backend-engineer-ai-security"
+      "value": "https://www.indeed.com/q-rag-ai-l-remote-jobs.html"
     },
-    "_dedupe_key": "2905e16bd1cfb86fca8ec949f39e3d71126a4377725c203fc38ee19bc662b28a",
-    "fit_score": 59.6,
+    "_dedupe_key": "af4077f404d4f5ba0d685084d804ff5f2fad437ef64c8adb013dab644de980e0",
+    "fit_score": 71.1,
     "reasons": [
-      "skill match: ai agent",
-      "The job posting aligns with the profile's interests in AI and security, and the company is a well-known and reputable organization",
-      "concern: The minimum requirement of 5+ years of software development experience may be a barrier for a second-year student, despite the preferred qualifications being a good fit"
+      "skill match: agentic ai, ai agent",
+      "The job posting aligns with the profile's preference for AI/agent work and offers a competitive hourly rate",
+      "concern: The posting does not explicitly mention the use of LangGraph, LangChain, or the MERN stack, which are part of the profile's skill set"
     ]
   },
   {
-    "title": "MapTiler:  ️ Location Services Engineer | Maps Platform (Remote in Europe)",
-    "description": "Headquarters: Zug, Switzerland URL: https://www.maptiler.com/ Full-time Remote in Europe Description Are you passionate about enhancing customer experiences through geospatial technology? MapTiler is seeking a Location Services Engineer to join our team of software engineers and data analysts. In this role, you'll drive innovation in map search, routing, elevation, and other products, collaborate with teams and stakeholders, and influence the future of our product. Take initiative in problem-solving, contribute to design and code reviews, and help deliver solutions that impact millions of users worldwide. If you're ready to make an impact, we'd love to hear from you! What are we doing Maintaining and optimizing the geocoding, routing, and other location services servers. Maintaining and improving local databases to continually improve search results and routing output. Coordinating the ingestion, transformation, and curation of raw geospatial data. Developing pipelines that convert large-scale data sources (e.g., Planet OSM PBF, Elevation data) into specialized data structures powering our location services. Managing releases, automated data processing pipelines, automated tests, and other core programming tasks. Monitoring the geocoding service, routing, and other location services and design targeted enhancements. Managing and integrating datasets for other MapTiler teams, such as elevation, address points, and routes. What we expect from you Ability to take ownership of the codebase and database, define requirements, set priorities, and drive progress with other team members. Hands-on expertise in programming, system design, and problem-solving. Cross-team collaboration and communication. Deep understanding of common data structures. Understanding the OpenStreetMap data model and its limits. Ability to work in a polyglot environment. We use TypeScript, Java, Rust, and are getting ready to add C++ to the mix, so deep knowledge of at least one of these is required. Understanding that creating a readable and maintainable codebase is sometimes more desired than the most elegant solution. Familiarity with the GIS domain and coordinate systems. Interest in maps, geocoding, and routing. Fluency in English and communicativeness even in a remote work environment. Nice to have Knowledge of Python, Ansible, and Bash scripting. Experience with Docker. Knowledge of OSM data-processing tools (eg. Osmium). Familiarity with the OpenStreetMap data structures (tagging schema). Hands-on experience with using AI agents to contribute to existing codebases. Experience with prompt/context or even harness engineering. What we offer Competitive financial compensation based on your experience (20-33€/hour) & annual performance bonus. Widescreen LCD, a laptop of your choice, and all the resources you need for your work. Flexible working hours to help you easily balance your personal and professional life. Work remotely from anywhere in Europe, or hang out with us at our hubs in Brno (Czechia) or Unterägeri (Switzerland). Collaborate with the best from major global brands to innovative open-source projects . Grow your career with dedicated support for continuous learning, attending conferences, and building your personal brand. A friendly, connected team and regular team-building events across Europe. About MapTiler We make maps easy so that everyone can understand the world better. Our platform powers everything from global weather forecasting and humanitarian crisis management to flight trackers and the Swiss railways. Our maps are viewed by hundreds of millions of people worldwide every month. We are deeply rooted in the developer and open-source communities. Since our users and customers are primarily developers, engineers, and geo-experts, we don't do traditional corporate account management. Instead, we build technical partnerships. To apply: https://weworkremotely.com/remote-jobs/maptiler-location-services-engineer-maps-platform-remote-in-europe",
-    "url": "https://weworkremotely.com/remote-jobs/maptiler-location-services-engineer-maps-platform-remote-in-europe",
-    "source": "weworkremotely",
+    "title": "Gradient Consulting leter etter Senior Software Engineer ...",
+    "description": "5 days ago · Work at the absolute frontier of agentic AI — one of the most exciting areas in technology today Collaborate on cutting-edge projects alongside leading AI research labs Fully remote and flexible — work when and where it suits you Freelance autonomy with the depth and challenge of meaningful, high-impact engineering work",
+    "url": "https://no.linkedin.com/jobs/view/senior-software-engineer-—-agentic-coding-at-gradient-consulting-4448034327",
+    "source": "Linkedin",
     "budget_text": null,
-    "posted_date": "Tue, 21 Jul 2026 14:57:31 +0000",
+    "posted_date": null,
     "contact": {
       "method": "apply_link",
-      "value": "https://weworkremotely.com/remote-jobs/maptiler-location-services-engineer-maps-platform-remote-in-europe"
+      "value": "https://no.linkedin.com/jobs/view/senior-software-engineer-—-agentic-coding-at-gradient-consulting-4448034327"
     },
-    "_dedupe_key": "167f355972e6193ad5a92cdd80c63244023f8e42b6d1f81961ec3f983fbbc5d4",
-    "fit_score": 34.0,
+    "_dedupe_key": "4ca9a7271c631530791cc6b5770af45f58a5ef3696ad5afa3796a0db14d10ad8",
+    "fit_score": 71.0,
     "reasons": [
-      "skill match: ai agent, python",
-      "The job posting requires skills in programming languages such as TypeScript, Java, and Rust, which are not mentioned in the profile, but it does offer a chance to work with geospatial technology and large-scale data sources",
-      "concern: The job posting is for a full-time position and requires the candidate to be based in Europe, which may not be a good fit for a second-year student based in Tunisia"
+      "skill match: agentic ai",
+      "The job posting is a perfect fit for the profile as it involves working on cutting-edge agentic AI projects, which aligns with the preference for AI/agent work",
+      "concern: The job title mentions Senior Software Engineer, which may imply a requirement for more experience than a second-year student has, potentially creating a barrier to being considered for the role"
+    ]
+  },
+  {
+    "title": "Platform Engineer IA Générative / Agentic AI (IT) / Freelance",
+    "description": "Signaler cette offre d’emploi Contexte : Dans le cadre de sa transformation technologique autour de l'intelligence artificielle générative, une organisation européenne du secteur des médias souhaite mettre en place une plateforme de développement Agentic AI destinée à l'ensemble de ses équipes de développement.",
+    "url": "https://fr.linkedin.com/jobs/view/platform-engineer-ia-générative-agentic-ai-it-freelance-at-free-work-4448418880",
+    "source": "Linkedin",
+    "budget_text": null,
+    "posted_date": null,
+    "contact": {
+      "method": "apply_link",
+      "value": "https://fr.linkedin.com/jobs/view/platform-engineer-ia-générative-agentic-ai-it-freelance-at-free-work-4448418880"
+    },
+    "_dedupe_key": "c7cb1c4f28758729197cd7117a25858eba1b9e56dcfda8ce350dc0697171669c",
+    "fit_score": 67.5,
+    "reasons": [
+      "skill match: agentic ai",
+      "The job posting is for a Platform Engineer IA Générative / Agentic AI, which aligns with the profile's skills and preference for AI/agent work",
+      "concern: The posting is in French, but the profile mentions the candidate is trilingual, so language is unlikely to be a barrier"
+    ]
+  },
+  {
+    "title": "Accenture UK & Ireland hiring AI Native SW Engineering in ...",
+    "description": "5 days ago · As an AI Engineer (Agentic/Applied), you will design, build, and deploy production-grade agentic AI systems across the full enterprise technology stack. You will work directly with client engineering teams, lead technical design sessions, and build reusable patterns and accelerators that scale beyond individual engagements.",
+    "url": "https://uk.linkedin.com/jobs/view/ai-native-sw-engineering-at-accenture-uk-ireland-4449153014",
+    "source": "Linkedin",
+    "budget_text": null,
+    "posted_date": null,
+    "contact": {
+      "method": "apply_link",
+      "value": "https://uk.linkedin.com/jobs/view/ai-native-sw-engineering-at-accenture-uk-ireland-4449153014"
+    },
+    "_dedupe_key": "a3b57c9b8e967b7ecc7f2571274e7a6e5d0e83fcd05122dfb389af2390bc43e5",
+    "fit_score": 67.5,
+    "reasons": [
+      "skill match: agentic ai",
+      "The job posting is a strong fit because it involves AI and agent development, which aligns with the student's skills and preferences",
+      "concern: The job is with Accenture UK & Ireland, which may require relocation or remote work, potentially posing logistical challenges for a student based in Tunisia"
+    ]
+  },
+  {
+    "title": "Flexible Channel Ai Jobs – Apply Today to Work From Home in Remote (August 8, 2026)",
+    "description": "We are hiring a hands on AI Practice Lead to design, build, and scale production grade Agentic AI systems for enterprise clients, with a focus on regulated…\n\n       View all Microagility jobs in Remote - Remote jobs - Integration Lead jobs in Remote\n       Salary Search: AI Practice Lead, Agentic AI and Enterprise Integration salaries in Remote\n\n   \n### AI Engineer\n\nEasily apply      Particle41 Remote [...] View all Dev Technology jobs in Reston, VA - Reston jobs - Audio Engineer jobs in Reston, VA\n       Salary Search: Audio AI Engineer salaries in Reston, VA\n       See popular questions & answers about Dev Technology\n\n     \n   \n### AI Practice Lead, Agentic AI and Enterprise Integration\n\nEasily apply      \n\nMicroagility Remote     \n\n       From $100 an hour  \n       Flexible schedule",
+    "url": "https://www.indeed.com/q-channel-ai-l-remote-jobs.html",
+    "source": "Indeed",
+    "budget_text": null,
+    "posted_date": null,
+    "contact": {
+      "method": "apply_link",
+      "value": "https://www.indeed.com/q-channel-ai-l-remote-jobs.html"
+    },
+    "_dedupe_key": "366f68aef84a23f9fee35402428d6c593cb5e610cdc349df89a4adc5739883f1",
+    "fit_score": 67.5,
+    "reasons": [
+      "skill match: agentic ai",
+      "The job posting is for an AI-related position that aligns with the profile's skills and preferences for AI/agent work",
+      "concern: The job requires experience as a Practice Lead, which may be beyond the scope of a second-year student's experience"
     ]
   }
 ]

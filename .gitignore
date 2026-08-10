@@ -3,6 +3,7 @@ Backend/checkpoints.db
 Backend/ranked_postings.json
 Backend/raw_postings.json
 Backend/review_queue.json
+Backend/gcp-oauth-web.json
 .venv
 
 Backend/test_full_pipeline.py

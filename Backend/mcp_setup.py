@@ -3,8 +3,8 @@ from langchain_mcp_adapters.client import MultiServerMCPClient
 mcp_client = MultiServerMCPClient(
     {
         "gmail": {
-            "command": "npx",
-            "args": ["-y", "@gongrzhe/server-gmail-autoauth-mcp"],
+            "command": "python",
+            "args": ["gmail_server.py"],
             "transport": "stdio",
         }
     }
