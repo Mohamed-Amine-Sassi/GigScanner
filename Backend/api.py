@@ -234,11 +234,6 @@ def callback(
     code: str,
     state: str,
 ):
-
-    # --------------------------------------------------------
-    # Retrieve the values saved during /login
-    # --------------------------------------------------------
-
     saved_state = request.session.get(
         "oauth_state"
     )
@@ -246,36 +241,21 @@ def callback(
     code_verifier = request.session.get(
         "oauth_code_verifier"
     )
-
-    # --------------------------------------------------------
-    # Validate OAuth state
-    # --------------------------------------------------------
-
     if not saved_state:
         raise HTTPException(
             status_code=400,
             detail="OAuth session expired or missing state"
         )
-
     if state != saved_state:
         raise HTTPException(
             status_code=400,
             detail="Invalid OAuth state"
         )
-
-    # --------------------------------------------------------
-    # Make sure PKCE verifier exists
-    # --------------------------------------------------------
-
     if not code_verifier:
         raise HTTPException(
             status_code=400,
             detail="Missing OAuth code verifier"
         )
-
-    # --------------------------------------------------------
-    # Recreate the OAuth flow
-    # --------------------------------------------------------
 
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
@@ -284,26 +264,14 @@ def callback(
         redirect_uri=REDIRECT_URI,
     )
 
-    # --------------------------------------------------------
-    # IMPORTANT:
-    # Restore the verifier generated during /login
-    # --------------------------------------------------------
-
+   
     flow.code_verifier = code_verifier
-
-    # --------------------------------------------------------
-    # Exchange Google's authorization code for tokens
-    # --------------------------------------------------------
 
     flow.fetch_token(
         code=code
     )
 
     creds = flow.credentials
-
-    # --------------------------------------------------------
-    # Get the Gmail account email
-    # --------------------------------------------------------
 
     service = build(
         "gmail",
@@ -361,3 +329,74 @@ def callback(
             f"&email={user_email}"
         )
     )
+
+def get_db_connection():
+    return psycopg2.connect(
+        host=os.getenv("POSTGRES_HOST", "localhost"),
+        port=os.getenv("POSTGRES_PORT", "5432"),
+        database=os.getenv("POSTGRES_DB", "project"),
+        user=os.getenv("POSTGRES_USER", "postgres"),
+        password=os.getenv("POSTGRES_PASSWORD"),
+    )
+
+
+@app.get("/auth/google/status")
+def google_status():
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT email, refresh_token FROM gmail_credentials "
+                "ORDER BY created_at DESC LIMIT 1"
+            )
+            row = cursor.fetchone()
+    finally:
+        conn.close()
+
+    if row is None or not row[1]:
+        return {"connected": False}
+
+    email, refresh_token = row
+    return {"connected": True, "email": email}
+
+
+@app.post("/auth/google/disconnect")
+def google_disconnect():
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT user_id, refresh_token FROM gmail_credentials "
+                "ORDER BY created_at DESC LIMIT 1"
+            )
+            row = cursor.fetchone()
+
+            if row is None:
+                return {"connected": False}
+
+            user_id, refresh_token = row
+
+            if refresh_token:
+                try:
+                    httpx.post(
+                        "https://oauth2.googleapis.com/revoke",
+                        params={"token": refresh_token},
+                        timeout=5,
+                    )
+                except httpx.HTTPError:
+                    # best-effort — still remove our local record
+                    # even if Google's revoke endpoint is unreachable
+                    pass
+
+            cursor.execute(
+                "DELETE FROM gmail_credentials WHERE user_id = %s",
+                (user_id,),
+            )
+
+        conn.commit()
+    finally:
+        conn.close()
+
+    return {"connected": False}

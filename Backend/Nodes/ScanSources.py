@@ -114,7 +114,7 @@ def scan_tanitjobs(query: str = "Agentic Ai freelance Job"):
         query=query,
         include_domains=["tanitjobs.com"],
         search_depth="basic",
-        max_results=10,
+        max_results=20,
         time_range="week",
     )
     return response["results"]
@@ -124,7 +124,7 @@ def scan_linkedin(query: str):
         query=query,
         include_domains=["linkedin.com"],
         search_depth="basic",
-        max_results=10,
+        max_results=20,
         time_range="week",
     )
 
@@ -206,7 +206,7 @@ def scan_indeed(query: str):
         query=query,
         include_domains=["indeed.com"],
         search_depth="basic",
-        max_results=10,
+        max_results=20,
         time_range="week",
     )
     return response["results"]
@@ -217,7 +217,7 @@ def scan_glassdoor(query: str):
         query=query,
         include_domains=["glassdoor.com"],
         search_depth="basic",
-        max_results=10,
+        max_results=20,
         time_range="week",
     )
     return response["results"]
@@ -228,7 +228,7 @@ def scan_keejob(query: str = "Agentic Ai freelance Job"):
         query=query,
         include_domains=["keejob.com"],
         search_depth="basic",
-        max_results=10,
+        max_results=20,
         time_range="week",
     )
     return response["results"]

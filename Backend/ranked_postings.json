@@ -1,62 +1,102 @@
 [
   {
-    "title": "Stripe: Backend Engineer, AI Security",
-    "description": "Headquarters: New York, San Francisco, Seattle, or Remote (US/Canada) Who we are About Stripe Stripe is a financial infrastructure platform for businesses. Millions of companies—from the world's largest enterprises to the most ambitious startups—use Stripe to accept payments, grow their revenue, and accelerate new business opportunities. Our mission is to increase the GDP of the internet, and we have a staggering amount of work ahead. That means you have an unprecedented opportunity to put the global economy within everyone's reach while doing the most important work of your career. About the team AI is moving fast and Stripe is moving fast to adopt it. But we need to make sure we do all of this safely, and for most of these tools, enterprise-grade security isn't just available off the shelf. That's where the AI security team comes in—we're responsible for building and partnering to create the right security primitives to enable Stripe to move fast safely. This is a team that works in the low-level components of our AI stack, so both infrastructure and security experience are pluses. This space is moving fast, so being comfortable with ambiguity and changes in priority is a must. This is a foundational role—you'd be the first engineer on the team. What you'll do Engineers on this team do a mixture of partnering and advising with teams building AI infrastructure and products, and building security infrastructure primitives for AI. One of our major focuses is building a security tooling layer that sits in the inference path, providing detection and protection against AI-specific threats like prompt injection, jailbreaks, and tool misuse. Responsibilities • Build security frameworks integrated with our core AI infrastructure • Design and implement defenses against AI-specific threats like prompt injection and jailbreaks • Collaborate with other engineering teams to ensure our AI infrastructure and products are built securely • Support other engineering teams in integrating security primitives • Uphold our high engineering standards and improve our codebase and processes • Design and build systems that help define the state of the art for AI security Who you are We're looking for someone who meets the minimum requirements to be considered for the role. If you meet these requirements, you are encouraged to apply. The preferred qualifications are a bonus, not a requirement. Minimum requirements • 5+ years of software development experience • Experience independently designing and developing medium-to-large projects • Experience working collaboratively across multiple engineering teams • Experience writing high-quality code in a major programming language • Ability to drive clear next steps when working in an ambiguous environment • Ability to think creatively and reason clearly in a complex problem domain Preferred qualifications • Experience developing, deploying, and maintaining reliable infrastructure systems • Experience in security engineering • Experience building AI agents or LLM-based systems To apply: https://weworkremotely.com/remote-jobs/stripe-backend-engineer-ai-security",
-    "url": "https://weworkremotely.com/remote-jobs/stripe-backend-engineer-ai-security",
-    "source": "weworkremotely",
-    "budget_text": null,
-    "posted_date": "Wed, 22 Jul 2026 07:01:06 +0000",
-    "relevance_score": null,
-    "contact": {
-      "method": "apply_link",
-      "value": "https://weworkremotely.com/remote-jobs/stripe-backend-engineer-ai-security"
-    },
-    "_dedupe_key": "2905e16bd1cfb86fca8ec949f39e3d71126a4377725c203fc38ee19bc662b28a",
-    "fit_score": 59.6,
-    "reasons": [
-      "skill match: ai agent",
-      "The job posting aligns with the profile's interest in AI and agent development, and the company's use of AI technology is a good fit",
-      "concern: The minimum requirement of 5+ years of software development experience may be a barrier for a second-year student."
-    ]
-  },
-  {
-    "title": "Net Full Stack Developer with (Agentic AI) - LinkedIn",
-    "description": "Role :- .Net Full Stack Developer with React and strong AI(Agentic AI) experience. Location :- Summit, NJ (3 days onsite 2 days remote in a week). Contract.",
-    "url": "https://www.linkedin.com/jobs/view/net-full-stack-developer-with-agentic-ai-at-pineq-lab-technology-4448433923",
+    "title": "Agentic Capability AI and Data Science Engineer - LinkedIn",
+    "description": "Design agent system architecture and implement DevSecOps practices for AI workflows; Build and maintain AI agents, agent systems, and reusable skills/workflows",
+    "url": "https://www.linkedin.com/jobs/view/agentic-capability-ai-and-data-science-engineer-at-deloitte-4450678364",
     "source": "Linkedin",
     "budget_text": null,
     "posted_date": null,
-    "relevance_score": 0.49040702,
+    "relevance_score": 0.5151571,
     "contact": {
       "method": "apply_link",
-      "value": "https://www.linkedin.com/jobs/view/net-full-stack-developer-with-agentic-ai-at-pineq-lab-technology-4448433923"
+      "value": "https://www.linkedin.com/jobs/view/agentic-capability-ai-and-data-science-engineer-at-deloitte-4450678364"
     },
-    "_dedupe_key": "d760e745188dee653b2ad79744180270f715c2b4476aea7762ba674079efab6d",
-    "fit_score": 34.9,
+    "_dedupe_key": "c866c05004f8b2264541c7a5ca2bb995cf76152473ae9e461e3203a9b1e9608f",
+    "fit_score": 70.1,
     "reasons": [
-      "skill match: agentic ai, react",
-      "The job posting mentions AI experience which aligns with the profile's preference for AI/agent work",
-      "concern: The job requires .Net Full Stack development skills which are not mentioned in the profile, and also requires onsite work in New Jersey, which may be a challenge for someone based in Tunisia"
+      "skill match: ai agent",
+      "The job posting aligns with the profile's preference for AI/agent work and requires skills in AI agent development",
+      "concern: The posting does not explicitly mention the MERN stack, but the focus on AI and agent development is a strong match"
     ]
   },
   {
-    "title": "Stellar AI: Senior Software Engineer",
-    "description": "Headquarters: London URL: https://joinstellar.ai/ We are seeking experienced Software Engineers to contribute to projects across a wide range of technologies and programming languages, including JavaScript, Python, Go, C++, Ruby, and more. This is an open-ended contract opportunity, structured around project-based work with no set schedules or minimum time or task commitments. Contributors who work with us decide which available projects they'd like to work on, when they work, and how much they contribute, which makes it an excellent option for those seeking flexible and high-impact work. In this role, you will help advance AI research by understanding complex systems, exploring large codebases, and developing approaches to verify the correctness of software behavior. Compensation $70 per hour after passing the qualification Fully remote Project based work, no minimum time or task commitments Responsibilities Rapidly build context in large, multi-module codebases Analyze feature implementations for correctness and edge cases Produce clear, structured documentation of findings and rationale Requirements Bachelor's degree in Computer Science or a related field At least 2 years of experience as a Software Engineer Excellent written communication skills Ability to clearly explain complex technical concepts Location Remote in the US, UK, Canada, Europe, Australia, or New Zealand To apply: https://weworkremotely.com/remote-jobs/stellar-ai-senior-software-engineer",
-    "url": "https://weworkremotely.com/remote-jobs/stellar-ai-senior-software-engineer",
-    "source": "weworkremotely",
+    "title": "Flexible Channel Ai Jobs – Apply Today to Work From Home in Remote (August 8, 2026)",
+    "description": "We are hiring a hands on AI Practice Lead to design, build, and scale production grade Agentic AI systems for enterprise clients, with a focus on regulated…\n\n       View all Microagility jobs in Remote - Remote jobs - Integration Lead jobs in Remote\n       Salary Search: AI Practice Lead, Agentic AI and Enterprise Integration salaries in Remote\n\n   \n### AI Engineer\n\nEasily apply      Particle41 Remote [...] View all Dev Technology jobs in Reston, VA - Reston jobs - Audio Engineer jobs in Reston, VA\n       Salary Search: Audio AI Engineer salaries in Reston, VA\n       See popular questions & answers about Dev Technology\n\n     \n   \n### AI Practice Lead, Agentic AI and Enterprise Integration\n\nEasily apply      \n\nMicroagility Remote     \n\n       From $100 an hour  \n       Flexible schedule",
+    "url": "https://www.indeed.com/q-channel-ai-l-remote-jobs.html",
+    "source": "Indeed",
     "budget_text": null,
-    "posted_date": "Tue, 21 Oct 2025 19:36:26 +0000",
-    "relevance_score": null,
+    "posted_date": null,
+    "relevance_score": 0.74229145,
     "contact": {
       "method": "apply_link",
-      "value": "https://weworkremotely.com/remote-jobs/stellar-ai-senior-software-engineer"
+      "value": "https://www.indeed.com/q-channel-ai-l-remote-jobs.html"
     },
-    "_dedupe_key": "ca4371b99d56aab2b368b8b49a97cc50d7c22e2b772fa5f2564c23e99b8f8072",
-    "fit_score": 30.4,
+    "_dedupe_key": "366f68aef84a23f9fee35402428d6c593cb5e610cdc349df89a4adc5739883f1",
+    "fit_score": 67.5,
     "reasons": [
-      "skill match: python",
-      "The job posting involves AI research and complex systems, which aligns with the profile's interest in AI/agent work",
-      "concern: The job requires at least 2 years of experience as a Software Engineer, which does not match the profile of a second-year software engineering student"
+      "skill match: agentic ai",
+      "The job posting involves AI and Agentic AI systems, which aligns with the profile's preference for AI/agent work",
+      "concern: The job title is AI Practice Lead, which may require more experience than a second-year student typically has"
+    ]
+  },
+  {
+    "title": "Flexible Python Ai Jobs – Apply Today to Work From Home in Remote (August 8, 2026)",
+    "description": "$150,000 - $240,000 a year  \n       Full-time  \n       401(k)  \n       Paid time off  \n       Vision insurance  \n       Dental insurance  \n       Paid sick time\n\n       Remote Sr or Staff Engineer ($150-$240k) Ruby, Rails, Agentic AI.\n       Job Title: Remote Sr or Staff Engineer ($150-$240k) Ruby, Rails, Agentic AI.\n\n   \n   \n\n### Health Sciences Specialist - Freelance AI Trainer Project \n\nMeridial Remote     \n\n       $8 - $65 an hour\n\nView similar jobs with this employer [...] Design and build multi‑agent conversational systems leveraging LangGraph, AutoGen, CrewAI, ADK, or similar frameworks.\n\n       View all CHROMEIS jobs in Remote - Remote jobs - AI Developer jobs in Remote\n       Salary Search: AI Engineer salaries in Remote\n\n    \n   \n### Remote Sr or Staff Engineer ($150-$240k) Ruby, Rails, Agentic AI \n\nEverforth Remote in Jacksonville, FL 32202 [...] $86,250 - $172,500 a year  \n           Full-time  \n           On call  \n           Tuition reimbursement  \n           Prescription drug insurance  \n           Parental leave  \n           Health insurance  \n           401(k) matching  \n           Paid time off  \n\n1/9\n\nGo to beginning of carousel\n\n   \n   \n\n### English Language Specialist (US Only) - Freelance AI Trainer Project \n\nMeridial Remote     \n\n       $20 an hour  \n       Freelance  \n       On demand",
+    "url": "https://www.indeed.com/q-python-ai-l-remote-jobs.html",
+    "source": "Indeed",
+    "budget_text": null,
+    "posted_date": null,
+    "relevance_score": 0.81630427,
+    "contact": {
+      "method": "apply_link",
+      "value": "https://www.indeed.com/q-python-ai-l-remote-jobs.html"
+    },
+    "_dedupe_key": "588b4ba798c74f5b220b97429b3689ffc5a8795169cce1833e3d5e924e121484",
+    "fit_score": 67.4,
+    "reasons": [
+      "skill match: langgraph, agentic ai, python",
+      "The job posting includes AI-related work and mentions LangGraph, which aligns with the profile's skills and interests",
+      "concern: The posting includes a mix of job offers, some of which do not match the profile's skills, such as Ruby and Rails, and may require filtering to find the best fit"
+    ]
+  },
+  {
+    "title": "Software Engineer – Agentic AI Platform (Python, LLM, AWS)",
+    "description": "Job Description. Job Title: Software Engineer – Agentic AI Platform. Max Pay: $60/hr on C2C. Eligibility: USC, GC-EAD and H4-EAD (No H1B or GC).",
+    "url": "https://www.linkedin.com/jobs/view/software-engineer-%E2%80%93-agentic-ai-platform-python-llm-aws-at-fustis-llc-4449628670",
+    "source": "Linkedin",
+    "budget_text": null,
+    "posted_date": null,
+    "relevance_score": 0.62742686,
+    "contact": {
+      "method": "apply_link",
+      "value": "https://www.linkedin.com/jobs/view/software-engineer-%E2%80%93-agentic-ai-platform-python-llm-aws-at-fustis-llc-4449628670"
+    },
+    "_dedupe_key": "57babdfa25fe78e4bf62844bf3713b0a1447deee0cff043a25fc64b3a8f0d140",
+    "fit_score": 62.9,
+    "reasons": [
+      "skill match: agentic ai, python",
+      "The job involves AI and agentic AI platform which aligns with the profile's preference for AI/agent work",
+      "concern: The job requires Python and AWS skills which are not mentioned in the profile, and also has specific eligibility criteria that may not match the profile's location and visa status"
+    ]
+  },
+  {
+    "title": "SysTechCorp Inc hiring AI Engineer (GenAI / Agentic AI ... - LinkedIn",
+    "description": "We are looking for an AI Engineer with strong experience in Generative AI, Agentic AI, LLMs, and Python to build enterprise-scale AI solutions.",
+    "url": "https://www.linkedin.com/jobs/view/ai-engineer-genai-agentic-ai-at-systechcorp-inc-4450265132",
+    "source": "Linkedin",
+    "budget_text": null,
+    "posted_date": null,
+    "relevance_score": 0.44376975,
+    "contact": {
+      "method": "apply_link",
+      "value": "https://www.linkedin.com/jobs/view/ai-engineer-genai-agentic-ai-at-systechcorp-inc-4450265132"
+    },
+    "_dedupe_key": "8f77e37937b4a9c7908047574464555f0ff4c33fbaaca2c14b935d7f95c4cc5e",
+    "fit_score": 62.9,
+    "reasons": [
+      "skill match: agentic ai, python",
+      "The job posting is a good fit because it involves AI and Agentic AI, which aligns with the profile's skills and preferences",
+      "concern: The posting requires experience with Python, which is not mentioned in the profile, potentially creating a skill gap"
     ]
   }
 ]

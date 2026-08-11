@@ -342,21 +342,125 @@ function ScoreBreakdown({ breakdown }) {
 }
 
 // ---------- Gmail ----------
+//
+// `status` is one of:
+//   { checking: true }
+//   { checking: false, connected: false }
+//   { checking: false, connected: true, email }
+//
+// The button renders three states: checking (disabled/quiet),
+// disconnected (call to action), connected (status pill you can
+// click to disconnect).
 
-function GmailButton() {
-  const [connecting, setConnecting] = useState(false);
+function GmailButton({ status, onConnect, onDisconnect }) {
+  const [hovering, setHovering] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
 
   const connectGmail = () => {
-    setConnecting(true);
+    onConnect?.();
 
     // FastAPI will redirect the browser to Google.
-    window.location.href = `http://localhost:8000/auth/google/login`;
+    window.location.href = `${API.replace(/\/api$/, "")}/auth/google/login`;
   };
+
+  const handleDisconnect = async () => {
+    setDisconnecting(true);
+
+    try {
+      await onDisconnect?.();
+    } finally {
+      setDisconnecting(false);
+      setHovering(false);
+    }
+  };
+
+  if (status?.checking) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "9px 14px",
+          borderRadius: 8,
+          border: "1px solid var(--border)",
+          color: "var(--text-muted)",
+          fontFamily: "'Space Grotesk', sans-serif",
+          fontSize: 13,
+        }}
+      >
+        <span
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: "var(--moderate)",
+          }}
+        />
+        Checking Gmail…
+      </div>
+    );
+  }
+
+  if (status?.connected) {
+    return (
+      <button
+        onClick={handleDisconnect}
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+        disabled={disconnecting}
+        title={hovering ? "Click to disconnect" : status.email}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "9px 14px",
+          borderRadius: 8,
+          border: `1px solid ${
+            hovering ? "var(--danger)" : "var(--border)"
+          }`,
+          background: hovering
+            ? "color-mix(in srgb, var(--danger) 12%, transparent)"
+            : "var(--surface)",
+          color: hovering ? "var(--danger)" : "var(--strong)",
+          cursor: disconnecting ? "default" : "pointer",
+          fontFamily: "'Space Grotesk', sans-serif",
+          fontSize: 13,
+          opacity: disconnecting ? 0.7 : 1,
+          transition: "background 0.15s ease, border-color 0.15s ease",
+        }}
+      >
+        <span
+          style={{
+            width: 7,
+            height: 7,
+            borderRadius: "50%",
+            background: hovering ? "var(--danger)" : "var(--strong)",
+            flexShrink: 0,
+          }}
+        />
+
+        <span
+          style={{
+            maxWidth: 160,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {disconnecting
+            ? "Disconnecting…"
+            : hovering
+              ? "Disconnect Gmail"
+              : status.email ?? "Gmail connected"}
+        </span>
+      </button>
+    );
+  }
 
   return (
     <button
       onClick={connectGmail}
-      disabled={connecting}
       style={{
         display: "flex",
         alignItems: "center",
@@ -366,18 +470,12 @@ function GmailButton() {
         border: "1px solid var(--border)",
         background: "var(--surface)",
         color: "var(--text)",
-        cursor: connecting ? "default" : "pointer",
+        cursor: "pointer",
         fontFamily: "'Space Grotesk', sans-serif",
         fontSize: 13,
-        opacity: connecting ? 0.7 : 1,
       }}
     >
-      <svg
-        width="17"
-        height="17"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
         <path
           d="M4 5h16v14H4z"
           stroke="currentColor"
@@ -393,7 +491,7 @@ function GmailButton() {
         />
       </svg>
 
-      {connecting ? "Connecting…" : "Connect Gmail"}
+      Connect Gmail
     </button>
   );
 }
@@ -1598,6 +1696,13 @@ function App() {
   const [minScore, setMinScore] =
     useState(0);
 
+  // { checking, connected, email }
+  const [gmailStatus, setGmailStatus] = useState({
+    checking: true,
+    connected: false,
+    email: null,
+  });
+
   useEffect(() => {
     setSyncing(true);
 
@@ -1629,7 +1734,8 @@ function App() {
       });
   }, []);
 
-  // Handle returning from Google OAuth
+  // Handle returning from Google OAuth, then fall back to asking the
+  // backend for the persisted status (covers plain page refreshes).
   useEffect(() => {
     const params = new URLSearchParams(
       window.location.search
@@ -1638,13 +1744,14 @@ function App() {
     const gmailConnected =
       params.get("gmail_connected");
 
-    const email = params.get("email");
+    const emailFromRedirect = params.get("email");
 
     if (gmailConnected === "true") {
-      console.log(
-        "Gmail connected:",
-        email
-      );
+      setGmailStatus({
+        checking: false,
+        connected: true,
+        email: emailFromRedirect,
+      });
 
       // Remove OAuth parameters from URL
       window.history.replaceState(
@@ -1652,8 +1759,43 @@ function App() {
         document.title,
         window.location.pathname
       );
+
+      return;
     }
+
+    fetch(`http://localhost:8000/auth/google/status`)
+      .then((r) => (r.ok ? r.json() : { connected: false }))
+      .then((data) => {
+        setGmailStatus({
+          checking: false,
+          connected: !!data.connected,
+          email: data.email ?? null,
+        });
+      })
+      .catch(() => {
+        setGmailStatus({
+          checking: false,
+          connected: false,
+          email: null,
+        });
+      });
   }, []);
+
+  const disconnectGmail = async () => {
+    try {
+      await fetch(`http://localhost:8000/auth/google/disconnect`, {
+        method: "POST",
+      });
+    } catch (error) {
+      console.error("Failed to disconnect Gmail:", error);
+    } finally {
+      setGmailStatus({
+        checking: false,
+        connected: false,
+        email: null,
+      });
+    }
+  };
 
   const updateDraft = (
     url,
@@ -1814,7 +1956,16 @@ function App() {
               gap: 10,
             }}
           >
-            <GmailButton />
+            <GmailButton
+              status={gmailStatus}
+              onConnect={() =>
+                setGmailStatus((s) => ({
+                  ...s,
+                  checking: true,
+                }))
+              }
+              onDisconnect={disconnectGmail}
+            />
 
             {tab === "ranked" && (
               <select

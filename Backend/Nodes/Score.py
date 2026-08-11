@@ -26,11 +26,42 @@ RED_FLAGS = ["unpaid", "equity only", "long-term unpaid trial", "no budget"]
 
 MIN_SCORE_THRESHOLD = 25
 
-YOUR_PROFILE = """
-Second-year software engineering student, based in Tunisia, trilingual (French/Arabic/English).
-Skilled in LangGraph, LangChain, AI agent development, and the MERN stack (React, Node, MongoDB, Express).
-Prefers AI/agent work over generic CRUD projects, but open to solid MERN gigs.
-"""
+YOUR_PROFILE = {
+    "level": "student",
+    "location": "Tunisia",
+    "languages": ["French", "Arabic", "English"],
+
+    "strong_skills": [
+        "LangGraph",
+        "LangChain",
+        "AI agents",
+        "Python",
+        "React",
+        "Node.js",
+        "MongoDB",
+        "Express"
+    ],
+
+    "preferred_work": [
+        "AI agents",
+        "LLM applications",
+        "RAG",
+        "LangGraph",
+        "LangChain"
+    ],
+
+    "acceptable_work": [
+        "MERN",
+        "React",
+        "Node.js",
+        "full-stack development"
+    ],
+
+    "avoid": [
+        "unpaid work",
+        "long unpaid trials"
+    ]
+}
 
 
 def check_red_flags(text: str) -> list[str]:
@@ -51,7 +82,7 @@ def score_skill_match(text: str) -> tuple[int, list[str]]:
 def llm_judge_posting(posting: dict) -> dict:
     prompt = f"""
 You are evaluating a freelance job posting for fit against this profile:
-{YOUR_PROFILE}
+{json.dumps(YOUR_PROFILE)}
 
 Posting title: {posting['title']}
 Posting description: {posting['description']}
