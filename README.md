@@ -1,14 +1,27 @@
 # Gig Scanner
 
-An AI-powered pipeline (LangGraph + Groq) that scans freelance/job postings, scores them for fit, drafts pitches, and sends approved pitches by email via a Gmail MCP server.
+An AI-powered pipeline (LangGraph + Groq) that scans freelance/job postings, scores them for fit, drafts pitches, and sends approved pitches by email — using your own Gmail account, connected through a simple sign-in flow.
+
+## How it works
+
+1. **Scan** — the pipeline searches configured job sources for new postings
+2. **Dedupe & score** — postings are deduplicated and scored for fit against a defined profile
+3. **Rank & draft** — the top candidates get a personalized pitch drafted by an LLM
+4. **Human review** — every draft is shown to you before anything is sent; you approve or discard each one
+5. **Send** — approved pitches are sent by email, using your own connected Gmail account
+
+Unlike the earlier version of this project, sending is no longer tied to one fixed account. Each person who uses the app connects their **own** Gmail account through a normal "Connect Gmail" sign-in — no terminal commands, no credential files to generate or share. Behind the scenes, the app talks to a Python MCP server that looks up the signed-in user's own stored access token before sending anything on their behalf.
+
+## Important: each self-hosted instance needs its own Google OAuth setup
+
+Because sending email requires Google's `gmail.send` permission, every person running this app needs their **own** Google Cloud OAuth client — you can't reuse someone else's, and this app hasn't gone through Google's app verification review, so **only emails you explicitly add as test users in your own Google Cloud project can sign in and use it**. Anyone else (including you, if you skip this step) will hit an "access blocked" error on Google's consent screen instead of a normal login failure.
 
 ## Prerequisites
 
 - Python 3.11+
 - Node.js 18+ and npm
-- A Google account (for Gmail sending)
 - API keys: [Tavily](https://tavily.com), [Groq](https://console.groq.com)
-- A database (see `DATABASE_URL` below)
+- PostgreSQL (local install or Docker) — used to store connected users' Gmail tokens
 
 ## 1. Clone the repo
 
@@ -32,50 +45,42 @@ Inside `Backend/`, create a file named `.env` with:
 
 ```dotenv
 TAVILY_API_KEY=your_tavily_key_here
-DATABASE_URL=your_database_connection_string_here
 GROQ_API_KEY=your_groq_key_here
+
+DATABASE_URL=postgresql://your_postgres_user:your_postgres_password@localhost:5432/your_postgres_db
+
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_DB=your_postgres_db
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
 ```
 
 - **TAVILY_API_KEY** — get one free at https://tavily.com (used for scanning/searching job sources)
 - **GROQ_API_KEY** — get one free at https://console.groq.com (used to draft pitches via LLM)
-- **DATABASE_URL** — your database connection string (e.g. a local Postgres or SQLite URL)
+- **POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB / POSTGRES_HOST / POSTGRES_PORT** — credentials for your local Postgres instance (used to store connected users' Gmail tokens)
+- **DATABASE_URL** — the full connection string built from the Postgres values above; make sure the two stay in sync
+
+You'll need a running Postgres instance for this — either installed locally or run via Docker, e.g.:
+```bash
+docker run --name gigscanner-db -e POSTGRES_USER=your_postgres_user -e POSTGRES_PASSWORD=your_postgres_password -e POSTGRES_DB=your_postgres_db -p 5432:5432 -d postgres
+```
 
 This file is gitignored — never commit it.
 
-## 3. Gmail MCP server setup (required for sending emails)
-
-The app sends approved pitches through a Gmail MCP server, which needs its own one-time Google OAuth setup.
-
-### a. Create Google Cloud credentials
+## 3. Google OAuth setup (required before you can send any email)
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/) → create a new project
 2. Enable the **Gmail API** for that project
-3. Go to **APIs & Services → OAuth consent screen** → configure:
-   - User type: External
-   - Add scope: `.../auth/gmail.send`
-   - Add your own Gmail address as a **test user**
-4. Go to **APIs & Services → Credentials → Create Credentials → OAuth client ID**
-   - Application type: **Desktop app**
-   - Download the resulting JSON
+3. Go to **Google Auth Platform → Audience** → set User type to **External**, then scroll to **Test users → Add users** → add **your own Gmail address** (and anyone else you want to be able to test with, up to 100). This step is required — without it, nobody, including you, can complete the sign-in flow.
+4. Go to **Google Auth Platform → Data access → Add or remove scopes** → search "gmail" → add the `.../auth/gmail.send` scope
+5. Go to **Google Auth Platform → Clients → Create client**
+   - Application type: **Web application**
+   - Authorized redirect URI: `http://localhost:8000/auth/google/callback` (adjust the port if your `uvicorn` command uses a different one)
+   - Click **Create**, then **Download JSON**
+6. Rename the downloaded file to `gcp-oauth-web.json` and place it in `Backend/`
 
-### b. Place and rename the credentials file
-
-Rename the downloaded file to `gcp-oauth.keys.json` and place it in:
-
-```
-Gmail-MCP-Server/gcp-oauth.keys.json
-```
-
-This file is gitignored — never commit it.
-
-### c. Run the one-time auth flow
-
-```bash
-cd ..   # back to project root
-npx -y @gongrzhe/server-gmail-autoauth-mcp auth
-```
-
-This opens your browser for Google consent. Approve access — you'll see an "unverified app" warning since it's in testing mode; click **Advanced → Go to [app name] (unsafe)** to proceed. This generates a token stored globally at `~/.gmail-mcp/credentials.json`, which the server reads from then on — you only need to do this once per machine.
+This file is gitignored — never commit it. It's your app's own OAuth client identity, not something generated by users signing in.
 
 ## 4. Frontend setup
 
@@ -86,7 +91,7 @@ npm install
 
 ## 5. Running the app
 
-You'll need three terminals/processes running:
+You'll need two processes running:
 
 **Backend API:**
 ```bash
@@ -101,23 +106,15 @@ cd Frontend/gig-scanner-ui
 npm run dev
 ```
 
-**Pipeline (standalone run, optional — for testing the scan/score/draft/send flow directly):**
-```bash
-cd Backend
-source .venv/bin/activate
-python runPipeline.py
-```
+## 6. Connecting your Gmail account
+
+Once the app is running, click **Connect Gmail** in the UI. You'll be redirected to Google's real sign-in and consent screen — approve access, and you'll be sent back to the app, connected. If the Gmail address you're signing in with wasn't added as a test user in step 3, Google will show an "access blocked" message instead.
 
 ## About this project
 
-This app was originally built for my own personal freelance job search — several files contain **my** profile, skills, and scoring criteria hardcoded in. If you clone this to search for gigs matching *your* profile instead, you'll need to edit:
+This app was originally built for my own personal freelance job search — several files still contain **my** profile, skills, and scoring criteria hardcoded in:
 
-- **`Backend/Nodes/DraftPitch.py`** — the `YOUR_PROFILE` variable at the top of the file. This text gets fed to the LLM as your background/skills when it drafts pitches, so replace it with your own experience, skills, and preferences.
-- **`Backend/Nodes/Score.py`** — the scoring criteria used to judge how well a posting fits. This currently reflects my skill set and priorities (e.g. weighting AI/agent work over generic CRUD work) — update it to match what you're actually looking for.
+- **`Backend/Nodes/DraftPitch.py`** — the `YOUR_PROFILE` variable, fed to the LLM when drafting pitches
+- **`Backend/Nodes/Score.py`** — the scoring criteria used to judge how well a posting fits
 
-Everything else (scanning sources, dedupe logic, the pipeline structure, the email-sending node) is generic and doesn't need changes to work for a different person's job search — only the profile and scoring criteria are personal.
-
-## Notes
-
-- The Gmail MCP server (`Gmail-MCP-Server/`) is spawned automatically as a subprocess by the backend when it needs to send email — you don't need to start it manually, just complete the one-time auth in step 3.
-- Emails send from whichever Gmail account completed the OAuth flow in step 3 — there's currently no per-user sign-in; it's a single fixed sending account.
+If you're running this for your own job search rather than just trying it out, update both of these to reflect your own background and priorities. Everything else — scanning, dedupe logic, the pipeline structure, the email-sending flow — is generic and works the same for anyone.
