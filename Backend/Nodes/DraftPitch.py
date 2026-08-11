@@ -2,6 +2,7 @@ import os
 import json
 from dotenv import load_dotenv
 from groq import Groq
+from Nodes.Score import MIN_SCORE_THRESHOLD
 
 load_dotenv()
 
@@ -49,17 +50,16 @@ Respond with ONLY the pitch text, no preamble, no markdown, no quotation marks a
 
 
 def draft_pitch_node(state):
-    top_candidates = state.get("top_candidates", [])
+    scored_postings = state.get("scored_postings", [])
 
-    email_candidates = [p for p in top_candidates if p.get("contact", {}).get("method") == "email"]
-    no_email_candidates = [p for p in top_candidates if p.get("contact", {}).get("method") != "email"]
+    email_candidates = [p for p in scored_postings if p.get("contact", {}).get("method") == "email"]
+    no_email_candidates = [p for p in scored_postings if p.get("contact", {}).get("method") != "email"]
 
     drafted = [draft_pitch_for_posting(p) for p in email_candidates]
 
     state["drafts"] = drafted
     state["no_email_candidates"] = no_email_candidates
     return state
-
 
 
 # if __name__ == "__main__":
