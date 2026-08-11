@@ -483,6 +483,8 @@ function EditorToolbar({ textareaRef, onChange }) {
 function DraftEditor({ draft, onFieldChange, onSave }) {
   const textareaRef = useRef(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [sending, setSending] = useState(false);
+
 
   const regenerate = async () => {
     setRegenerating(true);
@@ -498,7 +500,24 @@ function DraftEditor({ draft, onFieldChange, onSave }) {
       setRegenerating(false);
     }
   };
-
+const sendPitch = async () => {
+  setSending(true);
+  try {
+    const res = await fetch(`${API}/drafts/${encodeURIComponent(draft.url)}/send`, {
+      method: "POST",
+    });
+    if (res.ok) {
+      onFieldChange("decision", "approve");
+    } else {
+      const err = await res.json();
+      alert(`Send failed: ${err.detail}`);
+    }
+  } catch {
+    alert("Send failed: network error");
+  } finally {
+    setSending(false);
+  }
+};
   return (
     <div style={{ ...cardStyle, flex: 1, minWidth: 0 }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start" }}>
@@ -575,7 +594,8 @@ function DraftEditor({ draft, onFieldChange, onSave }) {
             Save
           </button>
           <button
-            onClick={() => onFieldChange("decision", "approve")}
+            onClick={sendPitch}
+            
             style={{
               fontSize: 13, fontWeight: 500, padding: "8px 18px", borderRadius: 6, border: "none",
               background: "var(--accent, #8b5cf6)", color: "#fff", cursor: "pointer",
