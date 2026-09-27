@@ -4,11 +4,9 @@ An AI-powered pipeline (LangGraph + Groq) that scans freelance/job postings, sco
 
 ## Prerequisites
 
-- Python 3.11+
-- Node.js 18+ and npm
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose (for the recommended setup below)
 - A Google account (for Gmail sending)
 - API keys: [Tavily](https://tavily.com), [Groq](https://console.groq.com)
-- A database (see `DATABASE_URL` below)
 
 ## 1. Clone the repo
 
@@ -17,34 +15,27 @@ git clone https://github.com/Mohamed-Amine-Sassi/GigScanner.git
 cd GigScanner
 ```
 
-## 2. Backend setup
+## 2. Configure environment variables
 
 ```bash
-cd Backend
-python -m venv .venv
-source .venv/bin/activate      # on Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+cp Backend/.env.example Backend/.env
 ```
 
-### Create your `.env` file
-
-Inside `Backend/`, create a file named `.env` with:
+Edit `Backend/.env` and fill in:
 
 ```dotenv
 TAVILY_API_KEY=your_tavily_key_here
-DATABASE_URL=your_database_connection_string_here
 GROQ_API_KEY=your_groq_key_here
 ```
 
 - **TAVILY_API_KEY** — get one free at https://tavily.com (used for scanning/searching job sources)
 - **GROQ_API_KEY** — get one free at https://console.groq.com (used to draft pitches via LLM)
-- **DATABASE_URL** — your database connection string (e.g. a local Postgres or SQLite URL)
 
-This file is gitignored — never commit it.
+`DATABASE_URL` doesn't need to be set here — Docker Compose points the backend at its own Postgres container automatically. This file is gitignored — never commit it.
 
 ## 3. Gmail MCP server setup (required for sending emails)
 
-The app sends approved pitches through a Gmail MCP server, which needs its own one-time Google OAuth setup.
+The app sends approved pitches through a Gmail MCP server, which needs its own one-time Google OAuth setup. This step happens on your host machine (not inside a container) since it needs to open a browser.
 
 ### a. Create Google Cloud credentials
 
@@ -71,41 +62,40 @@ This file is gitignored — never commit it.
 ### c. Run the one-time auth flow
 
 ```bash
-cd ..   # back to project root
 npx -y @gongrzhe/server-gmail-autoauth-mcp auth
 ```
 
-This opens your browser for Google consent. Approve access — you'll see an "unverified app" warning since it's in testing mode; click **Advanced → Go to [app name] (unsafe)** to proceed. This generates a token stored globally at `~/.gmail-mcp/credentials.json`, which the server reads from then on — you only need to do this once per machine.
+This opens your browser for Google consent. Approve access — you'll see an "unverified app" warning since it's in testing mode; click **Advanced → Go to [app name] (unsafe)** to proceed. This generates a token stored globally at `~/.gmail-mcp/credentials.json`. Docker Compose mounts this folder into the backend container automatically, so you only need to do this once per machine — the container reuses it.
 
-## 4. Frontend setup
+## 4. Run the app
 
 ```bash
-cd Frontend/gig-scanner-ui
-npm install
+docker compose up --build
 ```
 
-## 5. Running the app
+This starts three containers:
 
-You'll need three terminals/processes running:
+| Service | URL | What it does |
+|---|---|---|
+| `frontend` | http://localhost:5173 | React/Vite UI for reviewing and approving drafts |
+| `backend` | http://localhost:8000 | FastAPI server the frontend talks to |
+| `db` | localhost:5432 | Postgres — tables are created automatically on first start |
 
-**Backend API:**
+Open http://localhost:5173 in your browser once all three are up.
+
+### Running the pipeline standalone
+
+To trigger a scan/score/draft/send run directly, without going through the UI:
+
 ```bash
-cd Backend
-source .venv/bin/activate
-uvicorn api:app --reload
+docker compose exec backend python runPipeline.py
 ```
 
-**Frontend:**
-```bash
-cd Frontend/gig-scanner-ui
-npm run dev
-```
+### Stopping / resetting
 
-**Pipeline (standalone run, optional — for testing the scan/score/draft/send flow directly):**
 ```bash
-cd Backend
-source .venv/bin/activate
-python runPipeline.py
+docker compose down        # stop containers, keep data
+docker compose down -v     # stop containers and wipe the Postgres volume
 ```
 
 ## About this project
@@ -119,5 +109,6 @@ Everything else (scanning sources, dedupe logic, the pipeline structure, the ema
 
 ## Notes
 
-- The Gmail MCP server (`Gmail-MCP-Server/`) is spawned automatically as a subprocess by the backend when it needs to send email — you don't need to start it manually, just complete the one-time auth in step 3.
+- The Gmail MCP server package (`@gongrzhe/server-gmail-autoauth-mcp`) is spawned automatically as a subprocess by the backend when it needs to send email — you don't need to start it manually, just complete the one-time auth in step 3. The `Gmail-MCP-Server/` folder in this repo is a vendored reference copy of that package and isn't used directly by the app.
 - Emails send from whichever Gmail account completed the OAuth flow in step 3 — there's currently no per-user sign-in; it's a single fixed sending account.
+- Code changes to `Backend/` and `Frontend/gig-scanner-ui/` are picked up live — both are mounted into their containers, so you don't need to rebuild after every edit. Rebuild (`docker compose build`) only when you change `requirements.txt`, `package.json`, or a Dockerfile.
