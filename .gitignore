@@ -13,4 +13,4 @@ Gmail-MCP-Server/npm-debug.log*
 
 Frontend/node_modules/
 Frontend/dist/
-Frontend/.env
+Frontend/.envBackend/gcp-oauth-web.json

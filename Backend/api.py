@@ -4,13 +4,16 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from mcp_setup import get_send_email_tool
+from Nodes.Score import MIN_SCORE_THRESHOLD
 
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite's default dev port
+    allow_origins=[ "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:5173",],  # Vite's default dev port
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -33,8 +36,11 @@ def get_raw_postings():
 
 
 @app.get("/api/ranked-postings")
-def get_ranked_postings():
-    return read_json("ranked_postings.json")
+def get_ranked_postings(include_rejected: bool = False):
+    postings = read_json("ranked_postings.json")
+    if include_rejected:
+        return postings
+    return [p for p in postings if p.get("fit_score", 0) >= MIN_SCORE_THRESHOLD]
 
 
 @app.get("/api/drafts")

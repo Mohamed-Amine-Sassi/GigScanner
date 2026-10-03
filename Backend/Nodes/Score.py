@@ -61,7 +61,7 @@ Respond in this exact JSON format, nothing else, no markdown fences:
 """
     try:
         response = llm.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-20b",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2,
             max_tokens=200,

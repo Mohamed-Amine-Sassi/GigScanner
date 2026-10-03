@@ -34,7 +34,7 @@ Respond with ONLY the pitch text, no preamble, no markdown, no quotation marks a
 """
     try:
         response = llm.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-20b",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.6,
             max_tokens=300,

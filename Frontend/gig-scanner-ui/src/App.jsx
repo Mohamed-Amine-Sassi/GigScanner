@@ -1,743 +1,460 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
-const API = "http://localhost:8000/api";
+const API = "http://localhost:8001/api";
 
-const NAV = [
-  { key: "raw", label: "All Signals" },
-  { key: "ranked", label: "Strong Matches" },
+const TABS = [
+  { key: "raw", label: "All signals" },
+  { key: "ranked", label: "Strong matches" },
   { key: "drafts", label: "Drafts" },
 ];
 
-// ---------- small shared pieces ----------
+const css = `
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Sans:wght@400;500;600&display=swap');
+.gr{--bg:#f4f6f8;--surface:#fff;--ink:#101820;--muted:#5d6876;--line:#e2e6eb;--accent:#0b7a85;--accent-soft:#e0f2f4;
+--strong:#12805c;--mid:#b7791f;--weak:#8a93a0;--danger:#c2410c;--shadow:0 1px 2px rgba(16,24,32,.05);
+font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;font-size:15px;line-height:1.5}
+@media (prefers-color-scheme:dark){.gr{--bg:#0d1317;--surface:#141c22;--ink:#e8edf1;--muted:#97a3af;--line:#25313a;--accent:#47c3cf;--accent-soft:#12303a;
+--strong:#4ade9d;--mid:#f0b94d;--weak:#7d8996;--danger:#fb923c;--shadow:none}}
+.gr *{box-sizing:border-box}
+.gr button,.gr input,.gr textarea{font:inherit;color:inherit}
+.gr :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.gr h1,.gr h2,.gr h3{font-family:'Bricolage Grotesque','DM Sans',sans-serif;margin:0;letter-spacing:-.01em}
+.gr .top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.gr .top-in{max-width:1180px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.gr .brand{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px;display:flex;align-items:center;gap:10px}
+.gr .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.gr .tabs{display:flex;gap:4px;flex:1;flex-wrap:wrap}
+.gr .tab{display:flex;align-items:center;gap:8px;padding:8px 14px;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;font-weight:500}
+.gr .tab:hover{color:var(--ink)}
+.gr .tab[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.gr .count{font-size:12px;padding:0 7px;border-radius:99px;background:color-mix(in srgb,currentColor 16%,transparent)}
+.gr .sync{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+.gr .btn{padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:500;font-size:14px}
+.gr .btn:hover:not(:disabled){border-color:var(--muted)}
+.gr .btn:disabled{opacity:.5;cursor:not-allowed}
+.gr .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.gr .btn.danger{color:var(--danger)}
+.gr .btn.danger.on{background:color-mix(in srgb,var(--danger) 14%,transparent);border-color:var(--danger)}
+.gr main{max-width:1180px;margin:0 auto;padding:28px 24px 80px}
+.gr .toolbar{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+.gr .search{flex:1;min-width:200px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.gr .chips{display:flex;gap:6px}
+.gr .chip{padding:7px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:13px;color:var(--muted)}
+.gr .chip[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.gr .split{display:grid;grid-template-columns:minmax(280px,380px) 1fr;gap:20px;align-items:start}
+.gr .list{display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 190px);overflow:auto;padding:2px}
+.gr .row{display:flex;gap:12px;align-items:center;text-align:left;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;box-shadow:var(--shadow)}
+.gr .row:hover{border-color:var(--muted)}
+.gr .row[aria-current=true]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.gr .row-t{font-weight:600;font-size:14px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gr .row-s{font-size:12px;color:var(--muted);margin-top:2px}
+.gr .panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:26px;box-shadow:var(--shadow);position:sticky;top:84px}
+.gr .panel h2{font-size:22px;line-height:1.25}
+.gr .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:13px}
+.gr .badge{padding:2px 8px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-weight:600;color:var(--muted)}
+.gr .pill{padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c)}
+.gr .desc{margin:18px 0;color:var(--muted);max-width:68ch;white-space:pre-wrap;line-height:1.65}
+.gr .sec{font-size:13px;font-weight:600;margin:20px 0 8px}
+.gr .reasons{display:flex;flex-wrap:wrap;gap:6px}
+.gr .reason{font-size:13px;padding:4px 10px;border-radius:8px;background:var(--accent-soft);color:var(--ink)}
+.gr .contact{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:6px}
+.gr .bars{display:grid;gap:10px;margin-top:6px}
+.gr .bar-l{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:3px;text-transform:capitalize}
+.gr .bar{height:5px;border-radius:3px;background:var(--line);overflow:hidden}
+.gr .bar>i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.gr .actions{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:22px;flex-wrap:wrap}
+.gr .ring{position:relative;flex-shrink:0}
+.gr .ring svg{transform:rotate(-90deg);display:block}
+.gr .ring span{position:absolute;inset:0;display:grid;place-items:center;font-weight:600}
+.gr .editor-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.gr .tools{display:flex;gap:6px;margin:16px 0 8px}
+.gr .tool{width:32px;height:32px;border:1px solid var(--line);border-radius:8px;background:transparent;cursor:pointer;color:var(--muted)}
+.gr textarea{width:100%;min-height:300px;resize:vertical;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);line-height:1.65}
+.gr .foot{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
+.gr .empty{text-align:center;padding:72px 20px;color:var(--muted)}
+.gr .empty h3{color:var(--ink);font-size:18px;margin-bottom:6px}
+.gr .skel{height:68px;border-radius:12px;background:var(--line);margin-bottom:8px;animation:pulse 1.4s ease-in-out infinite}
+.gr .banner{padding:12px 16px;border:1px solid var(--danger);border-radius:10px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--danger)}
+.gr .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-size:14px;z-index:20}
+@keyframes pulse{50%{opacity:.5}}
+@media (max-width:900px){.gr .split{grid-template-columns:1fr}.gr .list{max-height:none}.gr .panel{position:static}.gr main{padding:20px 16px 80px}}
+@media (prefers-reduced-motion:reduce){.gr *{animation:none!important;transition:none!important}}
+`;
 
 function timeAgo(iso) {
   if (!iso) return null;
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.round(diffMs / 60000);
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.round(hrs / 24)}d ago`;
+  return hrs < 24 ? `${hrs}h ago` : `${Math.round(hrs / 24)}d ago`;
 }
 
-function NavIcon({ type }) {
-  const stroke = "currentColor";
-  if (type === "raw") {
-    return (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="6.5" stroke={stroke} strokeWidth="1.3" />
-        <circle cx="8" cy="8" r="3" stroke={stroke} strokeWidth="1.3" />
-        <circle cx="8" cy="8" r="1" fill={stroke} />
-      </svg>
-    );
-  }
-  if (type === "ranked") {
-    return (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path
-          d="M8 1.5l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.3l-3.8 2 .7-4.3-3.1-3 4.3-.6L8 1.5z"
-          stroke={stroke}
-          strokeWidth="1.2"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M2.5 3h11M2.5 8h11M2.5 13h7" stroke={stroke} strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
-  );
-}
+const tone = (s) => (s == null ? "var(--weak)" : s >= 70 ? "var(--strong)" : s >= 40 ? "var(--mid)" : "var(--weak)");
 
-function SignalMeter({ score, size = 44, strokeWidth = 3, fontSize = 12 }) {
-  const radius = (size / 2) - strokeWidth * 2;
-  const circumference = 2 * Math.PI * radius;
+function Ring({ score, size = 44 }) {
+  const sw = size > 60 ? 6 : 4;
+  const r = (size - sw) / 2;
+  const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, score ?? 0)) / 100;
-  const offset = circumference - pct * circumference;
-  const color =
-    !score ? "var(--danger)" :
-    score >= 70 ? "var(--strong)" :
-    score >= 40 ? "var(--moderate)" : "var(--weak)";
-
   return (
-    <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
-      <svg viewBox={`0 0 ${size} ${size}`} style={{ width: "100%", height: "100%", transform: "rotate(-90deg)" }}>
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--border)" strokeWidth={strokeWidth} />
-        <circle
-          cx={size / 2} cy={size / 2} r={radius} fill="none" strokeWidth={strokeWidth} strokeLinecap="round"
-          style={{ stroke: color, strokeDasharray: circumference, strokeDashoffset: offset, transition: "stroke-dashoffset 0.6s ease" }}
-        />
+    <div className="ring" style={{ width: size, height: size, color: tone(score), fontSize: size > 60 ? 22 : 13 }} aria-label={`Fit score ${score != null ? Math.round(score) : "unknown"}`}>
+      <svg width={size} height={size}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--line)" strokeWidth={sw} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={c * (1 - pct)} />
       </svg>
-      <span style={{
-        position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "'JetBrains Mono', monospace", fontSize, fontWeight: 500, color,
-      }}>
-        {score != null ? Math.round(score) : "–"}
-      </span>
+      <span>{score != null ? Math.round(score) : "–"}</span>
     </div>
   );
 }
 
-function SourceBadge({ source }) {
-  if (!source) return null;
+function Empty({ title, hint }) {
   return (
-    <span style={{
-      fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "var(--text-muted)",
-      border: "1px solid var(--border)", borderRadius: 4, padding: "2px 6px", textTransform: "uppercase",
-      letterSpacing: 0.5,
-    }}>
-      {source}
-    </span>
-  );
-}
-
-function EmptyState({ text }) {
-  return (
-    <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text-muted)" }}>
-      <div style={{
-        width: 64, height: 64, margin: "0 auto 16px", borderRadius: "50%",
-        border: "2px dashed var(--border)",
-      }} />
-      <p style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{text}</p>
+    <div className="empty">
+      <h3>{title}</h3>
+      <p>{hint}</p>
     </div>
   );
 }
 
-function ContactInfo({ contact }) {
-  const hasEmail = contact?.method === "email";
+function Skeleton() {
+  return <div>{[0, 1, 2, 3].map(i => <div key={i} className="skel" />)}</div>;
+}
+
+function Contact({ contact }) {
+  const ok = contact?.method === "email";
   return (
-    <div style={{
-      display: "flex", alignItems: "center", gap: 6, marginTop: 6,
-      fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-    }}>
-      <span style={{
-        width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
-        background: hasEmail ? "var(--strong)" : "var(--weak)",
-      }} />
-      {hasEmail ? (
-        <span style={{ color: "var(--strong)" }}>{contact.value}</span>
-      ) : (
-        <span style={{ color: "var(--text-muted)" }}>No email — apply link only</span>
-      )}
+    <div className="contact">
+      <span className="dot" style={{ background: ok ? "var(--strong)" : "var(--weak)" }} />
+      {ok ? contact.value : <span style={{ color: "var(--muted)" }}>No email. Use the apply link.</span>}
     </div>
   );
 }
 
-function ReasonChips({ reasons }) {
-  if (!reasons?.length) return null;
-  return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-      {reasons.map((r, j) => (
-        <span key={j} style={{
-          fontSize: 12, color: "var(--text-muted)", border: "1px solid var(--border)",
-          borderRadius: 20, padding: "3px 10px",
-        }}>
-          {r}
-        </span>
-      ))}
-    </div>
-  );
-}
+// ---------- postings (shared by All signals + Strong matches) ----------
 
-// optional per-posting sub-scores (only rendered if the backend actually sends them)
-function ScoreBreakdown({ breakdown }) {
-  if (!breakdown) return null;
-  const entries = Object.entries(breakdown);
-  if (!entries.length) return null;
+function PostingDetail({ post }) {
+  const hasRate = post.rate_min || post.rate_max;
+  const breakdown = post.score_breakdown ? Object.entries(post.score_breakdown) : [];
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
-      {entries.map(([label, value]) => (
-        <div key={label}>
-          <div style={{
-            display: "flex", justifyContent: "space-between",
-            fontFamily: "'JetBrains Mono', monospace", fontSize: 10, textTransform: "uppercase",
-            letterSpacing: 0.5, color: "var(--text-muted)", marginBottom: 4,
-          }}>
-            <span>{label.replace(/_/g, " ")}</span>
-          </div>
-          <div style={{ height: 4, borderRadius: 2, background: "var(--border)", overflow: "hidden" }}>
-            <div style={{
-              height: "100%", width: `${Math.max(0, Math.min(100, value))}%`,
-              background: "var(--accent, #8b5cf6)", borderRadius: 2,
-            }} />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ---------- sidebar ----------
-
-function Sidebar({ tab, setTab, counts, syncing, lastSynced }) {
-  return (
-    <aside style={{
-      width: 232, flexShrink: 0, borderRight: "1px solid var(--border)",
-      display: "flex", flexDirection: "column", padding: "24px 16px", gap: 28,
-      position: "sticky", top: 0, height: "100vh",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: "50%", border: "2px solid var(--border)",
-          position: "relative", flexShrink: 0, overflow: "hidden",
-        }}>
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "conic-gradient(from 0deg, transparent 0deg, var(--accent, #8b5cf6) 30deg, transparent 60deg)",
-            animation: "sweep 3s linear infinite",
-          }} />
-        </div>
+    <article className="panel">
+      <div className="editor-head">
         <div>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16 }}>Gig Radar</div>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--text-muted)",
-            fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: 0.5,
-          }}>
-            <span style={{
-              width: 6, height: 6, borderRadius: "50%",
-              background: syncing ? "var(--moderate)" : "var(--strong)",
-            }} />
-            {syncing ? "Syncing…" : lastSynced ? `Synced ${lastSynced.toLocaleTimeString()}` : "Idle"}
+          <h2>{post.title}</h2>
+          <div className="meta">
+            {post.source && <span className="badge">{post.source}</span>}
+            {timeAgo(post.posted_at) && <span>{timeAgo(post.posted_at)}</span>}
+            {hasRate && <span>${post.rate_min ?? "?"}–{post.rate_max ?? "?"}/hr</span>}
+            {post.hours_per_week && <span>{post.hours_per_week}+ hrs/week</span>}
           </div>
         </div>
+        <Ring score={post.fit_score} size={72} />
       </div>
 
-      <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        {NAV.map(n => {
-          const active = tab === n.key;
-          return (
-            <button
-              key={n.key}
-              onClick={() => setTab(n.key)}
-              style={{
-                display: "flex", alignItems: "center", gap: 10, width: "100%",
-                padding: "10px 12px", borderRadius: 8, cursor: "pointer",
-                border: active ? "1px solid var(--accent, #8b5cf6)" : "1px solid transparent",
-                background: active ? "color-mix(in srgb, var(--accent, #8b5cf6) 14%, transparent)" : "transparent",
-                color: active ? "var(--accent, #8b5cf6)" : "var(--text-muted)",
-                fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 14, textAlign: "left",
-              }}
-            >
-              <NavIcon type={n.key} />
-              <span style={{ flex: 1 }}>{n.label}</span>
-              <span style={{
-                fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
-                opacity: 0.8,
-                background: active ? "color-mix(in srgb, var(--accent, #8b5cf6) 22%, transparent)" : "var(--surface)",
-                borderRadius: 10, padding: "1px 7px",
-              }}>
-                {counts[n.key]}
-              </span>
-            </button>
-          );
-        })}
-      </nav>
-    </aside>
-  );
-}
+      <p className="desc">{post.description || "No description available."}</p>
 
-// ---------- All Signals ----------
-
-function RawList({ rawPostings }) {
-  if (rawPostings === null) return <EmptyState text="Syncing signals…" />;
-  if (rawPostings.length === 0) return <EmptyState text="No signals picked up yet. Run a scan to find gigs worth chasing." />;
-  const sorted = [...rawPostings].sort((a, b) => (b.fit_score ?? 0) - (a.fit_score ?? 0));
-  return sorted.map((p, i) => (
-    <div key={p.url ?? i} className="card" style={{ ...cardStyle, animation: `cardIn 0.3s ease ${i * 0.03}s both` }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-        <strong style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15 }}>{p.title}</strong>
-        <SourceBadge source={p.source} />
-      </div>
-      <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.5 }}>
-        {p.description ? `${p.description.slice(0, 180)}…` : "No description available."}
-      </p>
-      {timeAgo(p.posted_at) && (
-        <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace" }}>
-          {timeAgo(p.posted_at)}
-        </span>
+      {post.reasons?.length > 0 && (
+        <>
+          <div className="sec">Why it matched</div>
+          <div className="reasons">{post.reasons.map((r, i) => <span key={i} className="reason">{r}</span>)}</div>
+        </>
       )}
-      <ContactInfo contact={p.contact} />
-      <a href={p.url} target="_blank" rel="noreferrer" style={{ color: "var(--moderate)", fontSize: 13, textDecoration: "none" }}>
-        View posting →
-      </a>
-    </div>
-  ));
-}
-
-// ---------- Strong Matches ----------
-
-function HeroCard({ post }) {
-  return (
-    <div style={{ ...cardStyle, borderColor: "var(--accent, #8b5cf6)", padding: 22 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start" }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <SourceBadge source={post.source} />
-            {timeAgo(post.posted_at) && (
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{timeAgo(post.posted_at)}</span>
-            )}
-          </div>
-          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 19, margin: 0 }}>{post.title}</h2>
-          {(post.rate_min || post.rate_max || post.hours_per_week) && (
-            <div style={{
-              display: "flex", gap: 10, marginTop: 6, fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 13, color: "var(--moderate)",
-            }}>
-              {(post.rate_min || post.rate_max) && (
-                <span>${post.rate_min ?? "?"}–{post.rate_max ?? "?"}/hr</span>
-              )}
-              {post.hours_per_week && <span>{post.hours_per_week}+ hrs/week</span>}
-            </div>
-          )}
-        </div>
-        <SignalMeter score={post.fit_score} size={52} fontSize={14} />
-      </div>
-
-      <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.6, marginTop: 14 }}>
-        {post.description}
-      </p>
-
-      <ReasonChips reasons={post.reasons} />
-      <ContactInfo contact={post.contact} />
-
-      <a
-        href={post.url} target="_blank" rel="noreferrer"
-        style={{ display: "inline-block", marginTop: 14, color: "var(--moderate)", fontSize: 13, textDecoration: "none" }}
-      >
-        View source →
-      </a>
-    </div>
-  );
-}
-
-function OtherMatchRow({ post, onSelect }) {
-  return (
-    <div
-      onClick={onSelect}
-      style={{
-        display: "flex", alignItems: "center", gap: 14, padding: "12px 14px",
-        border: "1px solid var(--border)", borderRadius: 10, marginBottom: 8, cursor: "pointer",
-        background: "var(--surface)",
-      }}
-    >
-      <SignalMeter score={post.fit_score} size={34} fontSize={11} strokeWidth={2.5} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14, fontWeight: 500 }}>{post.title}</div>
-        <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{post.source}</div>
-      </div>
-    </div>
-  );
-}
-
-function MatchPanel({ post }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <div style={{ ...cardStyle, textAlign: "center", padding: 20 }}>
-        <div style={{
-          fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)",
-          fontFamily: "'JetBrains Mono', monospace", marginBottom: 14,
-        }}>
-          Match strength
-        </div>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <SignalMeter score={post.fit_score} size={88} strokeWidth={5} fontSize={22} />
-        </div>
-        <ScoreBreakdown breakdown={post.score_breakdown} />
-      </div>
-
-      <div style={cardStyle}>
-        <div style={{
-          fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)",
-          fontFamily: "'JetBrains Mono', monospace", marginBottom: 10,
-        }}>
-          Why it matched
-        </div>
-        {post.reasons?.length ? (
-          <ReasonChips reasons={post.reasons} />
-        ) : (
-          <p style={{ fontSize: 13, color: "var(--text-muted)" }}>No signal breakdown available for this posting.</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function RankedView({ ranked, minScore, setMinScore }) {
-  const [focusedUrl, setFocusedUrl] = useState(null);
-
-  const sorted = useMemo(
-    () => (ranked ?? []).filter(p => (p.fit_score ?? 0) >= minScore).sort((a, b) => (b.fit_score ?? 0) - (a.fit_score ?? 0)),
-    [ranked, minScore]
-  );
-  const focused = sorted.find(p => p.url === focusedUrl) ?? sorted[0] ?? null;
-  const others = sorted.filter(p => p !== focused);
-
-  if (ranked === null) return <EmptyState text="Syncing signals…" />;
-  if (sorted.length === 0) return <EmptyState text="Nothing cleared the threshold this run." />;
-
-  return (
-    <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        {focused && <HeroCard post={focused} />}
-        {others.length > 0 && (
-          <div style={{ marginTop: 20 }}>
-            <div style={{
-              fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)",
-              fontFamily: "'JetBrains Mono', monospace", marginBottom: 10,
-            }}>
-              Other high scores
-            </div>
-            {others.map((p, i) => (
-              <OtherMatchRow key={p.url ?? i} post={p} onSelect={() => setFocusedUrl(p.url)} />
+      {breakdown.length > 0 && (
+        <>
+          <div className="sec">Score breakdown</div>
+          <div className="bars">
+            {breakdown.map(([k, v]) => (
+              <div key={k}>
+                <div className="bar-l"><span>{k.replace(/_/g, " ")}</span><span>{Math.round(v)}</span></div>
+                <div className="bar"><i style={{ width: `${Math.max(0, Math.min(100, v))}%` }} /></div>
+              </div>
             ))}
           </div>
-        )}
+        </>
+      )}
+
+      <div className="sec">Contact</div>
+      <Contact contact={post.contact} />
+
+      <div className="actions">
+        <span />
+        <a className="btn primary" href={post.url} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>Open posting</a>
       </div>
-      <div style={{ width: 280, flexShrink: 0 }}>
-        {focused && <MatchPanel post={focused} />}
-      </div>
-    </div>
+    </article>
   );
 }
 
-// ---------- Drafts ----------
+function PostingBrowser({ items, noun }) {
+  const [query, setQuery] = useState("");
+  const [minScore, setMinScore] = useState(0);
+  const [focusedUrl, setFocusedUrl] = useState(null);
 
-function DraftListItem({ draft, active, onSelect }) {
-  const decisionColor =
-    draft.decision === "approve" ? "var(--strong)" :
-    draft.decision === "discard" ? "var(--danger)" : "var(--weak)";
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (items ?? [])
+      .filter(p => (p.fit_score ?? 0) >= minScore)
+      .filter(p => !q || `${p.title} ${p.source} ${p.description ?? ""}`.toLowerCase().includes(q))
+      .sort((a, b) => (b.fit_score ?? 0) - (a.fit_score ?? 0));
+  }, [items, query, minScore]);
+
+  const focused = filtered.find(p => p.url === focusedUrl) ?? filtered[0] ?? null;
+
   return (
-    <div
-      onClick={onSelect}
-      style={{
-        padding: "12px 14px", borderRadius: 10, marginBottom: 8, cursor: "pointer",
-        border: active ? "1px solid var(--accent, #8b5cf6)" : "1px solid var(--border)",
-        background: active ? "color-mix(in srgb, var(--accent, #8b5cf6) 10%, transparent)" : "var(--surface)",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
-        <span style={{
-          fontFamily: "'JetBrains Mono', monospace", fontSize: 10, textTransform: "uppercase",
-          color: decisionColor, letterSpacing: 0.5,
-        }}>
-          {draft.decision ?? "pending"}
-        </span>
-        {draft.fit_score != null && (
-          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "var(--text-muted)" }}>
-            {Math.round(draft.fit_score)}%
-          </span>
-        )}
+    <>
+      <div className="toolbar">
+        <input className="search" type="search" placeholder={`Search ${noun}`} value={query}
+          onChange={e => setQuery(e.target.value)} aria-label={`Search ${noun}`} />
+        <div className="chips" role="group" aria-label="Minimum score">
+          {[[0, "All"], [40, "40+"], [70, "70+"], [85, "85+"]].map(([v, l]) => (
+            <button key={v} className="chip" aria-pressed={minScore === v} onClick={() => setMinScore(v)}>{l}</button>
+          ))}
+        </div>
       </div>
-      <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14, fontWeight: 500, marginTop: 4 }}>
-        {draft.title}
-      </div>
-      <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{draft.source}</div>
-    </div>
+
+      {filtered.length === 0 ? (
+        <Empty title={items?.length ? "Nothing matches these filters" : `No ${noun} yet`}
+          hint={items?.length ? "Lower the minimum score or clear the search." : "Run a scan from the backend to pull in new gigs."} />
+      ) : (
+        <div className="split">
+          <div className="list">
+            {filtered.map((p, i) => (
+              <button key={p.url ?? i} className="row" aria-current={focused?.url === p.url} onClick={() => setFocusedUrl(p.url)}>
+                <Ring score={p.fit_score} size={40} />
+                <div style={{ minWidth: 0 }}>
+                  <div className="row-t">{p.title}</div>
+                  <div className="row-s">{p.source}{timeAgo(p.posted_at) ? ` • ${timeAgo(p.posted_at)}` : ""}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+          {focused && <PostingDetail post={focused} />}
+        </div>
+      )}
+    </>
   );
 }
 
-function EditorToolbar({ textareaRef, onChange }) {
+// ---------- drafts ----------
+
+function Toolbar({ textareaRef, onChange }) {
   const wrap = (before, after = before) => {
     const el = textareaRef.current;
     if (!el) return;
-    const { selectionStart, selectionEnd, value } = el;
-    const selected = value.slice(selectionStart, selectionEnd);
-    const next = value.slice(0, selectionStart) + before + selected + after + value.slice(selectionEnd);
-    onChange(next);
-    requestAnimationFrame(() => {
-      el.focus();
-      el.setSelectionRange(selectionStart + before.length, selectionEnd + before.length);
-    });
+    const { selectionStart: s, selectionEnd: e, value } = el;
+    onChange(value.slice(0, s) + before + value.slice(s, e) + after + value.slice(e));
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(s + before.length, e + before.length); });
   };
-
-  const bulletize = () => {
+  const bullets = () => {
     const el = textareaRef.current;
     if (!el) return;
-    const { selectionStart, selectionEnd, value } = el;
-    const lineStart = value.lastIndexOf("\n", selectionStart - 1) + 1;
-    const before = value.slice(0, lineStart);
-    const target = value.slice(lineStart, selectionEnd);
-    const bulleted = target.split("\n").map(l => (l.startsWith("- ") ? l : `- ${l}`)).join("\n");
-    onChange(before + bulleted + value.slice(selectionEnd));
+    const { selectionStart: s, selectionEnd: e, value } = el;
+    const ls = value.lastIndexOf("\n", s - 1) + 1;
+    const out = value.slice(ls, e).split("\n").map(l => (l.startsWith("- ") ? l : `- ${l}`)).join("\n");
+    onChange(value.slice(0, ls) + out + value.slice(e));
     el.focus();
   };
-
-  const btnStyle = {
-    width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center",
-    border: "1px solid var(--border)", borderRadius: 6, background: "transparent",
-    color: "var(--text-muted)", cursor: "pointer", fontSize: 13,
-  };
-
   return (
-    <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
-      <button type="button" style={{ ...btnStyle, fontWeight: 700 }} onClick={() => wrap("**")}>B</button>
-      <button type="button" style={{ ...btnStyle, fontStyle: "italic" }} onClick={() => wrap("_")}>I</button>
-      <button type="button" style={{ ...btnStyle, textDecoration: "underline" }} onClick={() => wrap("<u>", "</u>")}>U</button>
-      <button type="button" style={btnStyle} onClick={bulletize}>•≡</button>
+    <div className="tools">
+      <button type="button" className="tool" style={{ fontWeight: 700 }} onClick={() => wrap("**")} aria-label="Bold">B</button>
+      <button type="button" className="tool" style={{ fontStyle: "italic" }} onClick={() => wrap("_")} aria-label="Italic">I</button>
+      <button type="button" className="tool" style={{ textDecoration: "underline" }} onClick={() => wrap("<u>", "</u>")} aria-label="Underline">U</button>
+      <button type="button" className="tool" onClick={bullets} aria-label="Bulleted list">•</button>
     </div>
   );
 }
 
-function DraftEditor({ draft, onFieldChange, onSave }) {
-  const textareaRef = useRef(null);
-  const [regenerating, setRegenerating] = useState(false);
-  const [sending, setSending] = useState(false);
+const decisionColor = (d) => (d === "approve" ? "var(--strong)" : d === "discard" ? "var(--danger)" : "var(--mid)");
+const decisionLabel = (d) => (d === "approve" ? "Sent" : d === "discard" ? "Discarded" : "Needs review");
 
+function DraftEditor({ draft, onFieldChange, onSave, toast }) {
+  const ref = useRef(null);
+  const [busy, setBusy] = useState(null);
+  const text = draft.edited_pitch ?? "";
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const sent = draft.decision === "approve";
 
   const regenerate = async () => {
-    setRegenerating(true);
+    setBusy("regen");
     try {
       const res = await fetch(`${API}/drafts/${encodeURIComponent(draft.url)}/regenerate`, { method: "POST" });
-      if (res.ok) {
-        const updated = await res.json();
-        if (updated?.edited_pitch != null) onFieldChange("edited_pitch", updated.edited_pitch);
-      }
+      if (!res.ok) throw new Error();
+      const updated = await res.json();
+      if (updated?.edited_pitch != null) onFieldChange("edited_pitch", updated.edited_pitch);
+      toast("New draft ready");
     } catch {
-      // regeneration endpoint not available yet — no-op
-    } finally {
-      setRegenerating(false);
-    }
+      toast("Couldn't regenerate. Try again.");
+    } finally { setBusy(null); }
   };
-const sendPitch = async () => {
-  setSending(true);
-  try {
-    const res = await fetch(`${API}/drafts/${encodeURIComponent(draft.url)}/send`, {
-      method: "POST",
-    });
-    if (res.ok) {
-      onFieldChange("decision", "approve");
-    } else {
-      const err = await res.json();
-      alert(`Send failed: ${err.detail}`);
-    }
-  } catch {
-    alert("Send failed: network error");
-  } finally {
-    setSending(false);
-  }
-};
+
+  const send = async () => {
+    if (!window.confirm(`Send this pitch to ${draft.email ?? "the contact"}?`)) return;
+    setBusy("send");
+    try {
+      const res = await fetch(`${API}/drafts/${encodeURIComponent(draft.url)}/send`, { method: "POST" });
+      if (res.ok) { onFieldChange("decision", "approve"); toast("Pitch sent"); }
+      else { const err = await res.json().catch(() => ({})); toast(`Send failed: ${err.detail ?? res.status}`); }
+    } catch { toast("Send failed: can't reach the server"); }
+    finally { setBusy(null); }
+  };
+
+  const save = async () => {
+    setBusy("save");
+    try { await onSave(); toast("Draft saved"); }
+    catch { toast("Couldn't save. Check the server."); }
+    finally { setBusy(null); }
+  };
+
   return (
-    <div style={{ ...cardStyle, flex: 1, minWidth: 0 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start" }}>
+    <article className="panel">
+      <div className="editor-head">
         <div>
-          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 19, margin: 0 }}>{draft.title}</h2>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-            <SourceBadge source={draft.source} />
-            <span style={{
-              fontSize: 11, color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace",
-              textTransform: "uppercase", letterSpacing: 0.5,
-            }}>
-              AI drafted
-            </span>
+          <h2>{draft.title}</h2>
+          <div className="meta">
+            {draft.source && <span className="badge">{draft.source}</span>}
+            <span className="pill" style={{ "--c": decisionColor(draft.decision) }}>{decisionLabel(draft.decision)}</span>
+            {draft.email && <span>To: {draft.email}</span>}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button
-            onClick={regenerate}
-            disabled={regenerating}
-            style={{
-              fontSize: 13, padding: "8px 14px", borderRadius: 6, border: "1px solid var(--border)",
-              background: "transparent", color: "var(--text-muted)", cursor: "pointer",
-            }}
-          >
-            {regenerating ? "Regenerating…" : "↻ Regenerate"}
-          </button>
-        </div>
+        <button className="btn" onClick={regenerate} disabled={busy || sent}>{busy === "regen" ? "Regenerating…" : "Regenerate"}</button>
       </div>
 
-      {draft.email && (
-        <div style={{
-          display: "flex", alignItems: "center", gap: 6, marginTop: 12,
-          fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-        }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--strong)", flexShrink: 0 }} />
-          <span style={{ color: "var(--strong)" }}>{draft.email}</span>
-        </div>
-      )}
+      <Toolbar textareaRef={ref} onChange={v => onFieldChange("edited_pitch", v)} />
+      <textarea ref={ref} value={text} disabled={sent} onChange={e => onFieldChange("edited_pitch", e.target.value)} aria-label="Pitch text" />
+      <div className="foot"><span>{words} words</span><span>{sent ? "This pitch has been sent." : "Edits stay local until you save."}</span></div>
 
-      <div style={{ marginTop: 16 }}>
-        <EditorToolbar textareaRef={textareaRef} onChange={(v) => onFieldChange("edited_pitch", v)} />
-        <textarea
-          ref={textareaRef}
-          value={draft.edited_pitch ?? ""}
-          onChange={(e) => onFieldChange("edited_pitch", e.target.value)}
-          style={{
-            width: "100%", minHeight: 260, background: "var(--bg)", color: "var(--text)",
-            border: "1px solid var(--border)", borderRadius: 8, padding: 14, fontSize: 14, lineHeight: 1.6,
-            fontFamily: "'Inter', sans-serif", resize: "vertical",
-          }}
-        />
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
-        <button
-          onClick={() => onFieldChange("decision", "discard")}
-          style={{
-            fontSize: 13, padding: "8px 16px", borderRadius: 6,
-            border: `1px solid ${draft.decision === "discard" ? "var(--danger)" : "var(--border)"}`,
-            background: draft.decision === "discard" ? "color-mix(in srgb, var(--danger) 18%, transparent)" : "transparent",
-            color: draft.decision === "discard" ? "var(--danger)" : "var(--text-muted)", cursor: "pointer",
-          }}
-        >
-          Discard
+      <div className="actions">
+        <button className={`btn danger ${draft.decision === "discard" ? "on" : ""}`} disabled={busy || sent}
+          onClick={() => onFieldChange("decision", draft.decision === "discard" ? null : "discard")}>
+          {draft.decision === "discard" ? "Undo discard" : "Discard"}
         </button>
         <div style={{ display: "flex", gap: 8 }}>
-          <button
-            onClick={onSave}
-            style={{
-              fontSize: 13, padding: "8px 16px", borderRadius: 6, border: "1px solid var(--border)",
-              background: "transparent", color: "var(--text-muted)", cursor: "pointer",
-            }}
-          >
-            Save
-          </button>
-          <button
-            onClick={sendPitch}
-            
-            style={{
-              fontSize: 13, fontWeight: 500, padding: "8px 18px", borderRadius: 6, border: "none",
-              background: "var(--accent, #8b5cf6)", color: "#fff", cursor: "pointer",
-            }}
-          >
-            Send pitch
+          <button className="btn" onClick={save} disabled={busy}>{busy === "save" ? "Saving…" : "Save draft"}</button>
+          <button className="btn primary" onClick={send} disabled={busy || sent || !draft.email}
+            title={!draft.email ? "This posting has no email contact" : undefined}>
+            {busy === "send" ? "Sending…" : "Send pitch"}
           </button>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 
-function DraftsView({ drafts, updateDraft, saveDraft }) {
+function DraftsView({ drafts, updateDraft, saveDraft, toast }) {
   const [focusedUrl, setFocusedUrl] = useState(null);
-  const focused = drafts?.find(d => d.url === focusedUrl) ?? drafts?.[0] ?? null;
-
-  if (drafts === null) return <EmptyState text="Syncing signals…" />;
-  if (drafts.length === 0) return <EmptyState text="No drafts waiting on you." />;
+  if (drafts.length === 0) return <Empty title="No drafts to review" hint="Pitches appear here after the pipeline drafts them." />;
+  const focused = drafts.find(d => d.url === focusedUrl) ?? drafts[0];
 
   return (
-    <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
-      <div style={{ width: 260, flexShrink: 0 }}>
+    <div className="split">
+      <div className="list">
         {drafts.map((d, i) => (
-          <DraftListItem
-            key={d.url ?? i}
-            draft={d}
-            active={focused?.url === d.url}
-            onSelect={() => setFocusedUrl(d.url)}
-          />
+          <button key={d.url ?? i} className="row" aria-current={focused.url === d.url} onClick={() => setFocusedUrl(d.url)}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div className="row-t">{d.title}</div>
+              <div className="row-s" style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 6 }}>
+                <span className="pill" style={{ "--c": decisionColor(d.decision) }}>{decisionLabel(d.decision)}</span>
+                <span>{d.source}</span>
+              </div>
+            </div>
+            {d.fit_score != null && <Ring score={d.fit_score} size={36} />}
+          </button>
         ))}
       </div>
-      {focused && (
-        <DraftEditor
-          draft={focused}
-          onFieldChange={(field, value) => updateDraft(focused.url, field, value)}
-          onSave={() => saveDraft(focused)}
-        />
-      )}
+      <DraftEditor key={focused.url} draft={focused} toast={toast}
+        onFieldChange={(f, v) => updateDraft(focused.url, f, v)} onSave={() => saveDraft(focused)} />
     </div>
   );
 }
 
 // ---------- app ----------
 
-function App() {
+export default function App() {
   const [tab, setTab] = useState("raw");
-  const [rawPostings, setRawPostings] = useState(null);
+  const [raw, setRaw] = useState(null);
   const [ranked, setRanked] = useState(null);
   const [drafts, setDrafts] = useState(null);
   const [lastSynced, setLastSynced] = useState(null);
   const [syncing, setSyncing] = useState(true);
-  const [minScore, setMinScore] = useState(0);
+  const [error, setError] = useState(false);
+  const [message, setMessage] = useState(null);
 
-  useEffect(() => {
-    setSyncing(true);
-    Promise.all([
-      fetch(`${API}/raw-postings`).then(r => r.json()),
-      fetch(`${API}/ranked-postings`).then(r => r.json()),
-      fetch(`${API}/drafts`).then(r => r.json()),
-    ]).then(([raw, rank, draft]) => {
-      setRawPostings(raw);
-      setRanked(rank);
-      setDrafts(draft);
-      setLastSynced(new Date());
-      setSyncing(false);
-    });
+  const toast = useCallback((m) => {
+    setMessage(m);
+    setTimeout(() => setMessage(null), 3000);
   }, []);
 
-  const updateDraft = (url, field, value) => {
+  const load = useCallback(async () => {
+    setSyncing(true);
+    setError(false);
+    try {
+      const [a, b, c] = await Promise.all(
+        ["raw-postings", "ranked-postings", "drafts"].map(p => fetch(`${API}/${p}`).then(r => { if (!r.ok) throw new Error(); return r.json(); }))
+      );
+      setRaw(a); setRanked(b); setDrafts(c); setLastSynced(new Date());
+    } catch {
+      setError(true);
+    } finally { setSyncing(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const updateDraft = (url, field, value) =>
     setDrafts(prev => prev.map(d => (d.url === url ? { ...d, [field]: value } : d)));
-  };
 
   const saveDraft = async (draft) => {
-    await fetch(`${API}/drafts/${encodeURIComponent(draft.url)}`, {
+    const res = await fetch(`${API}/drafts/${encodeURIComponent(draft.url)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ decision: draft.decision, edited_pitch: draft.edited_pitch }),
     });
+    if (!res.ok) throw new Error();
   };
 
-  const counts = { raw: rawPostings?.length ?? 0, ranked: ranked?.length ?? 0, drafts: drafts?.length ?? 0 };
-
-  const headers = {
-    raw: {
-      title: "All Signals",
-      subtitle: rawPostings ? `${rawPostings.length} signal${rawPostings.length === 1 ? "" : "s"} picked up from your sources.` : "Loading…",
-    },
-    ranked: {
-      title: "Strong Matches",
-      subtitle: ranked ? `${ranked.filter(p => (p.fit_score ?? 0) >= minScore).length} opportunit${ranked.filter(p => (p.fit_score ?? 0) >= minScore).length === 1 ? "y" : "ies"} matching your profile.` : "Loading…",
-    },
-    drafts: {
-      title: "Drafts",
-      subtitle: drafts ? `${drafts.filter(d => (d.decision ?? "pending") === "pending").length} pitch${drafts.filter(d => (d.decision ?? "pending") === "pending").length === 1 ? "" : "es"} waiting for review.` : "Loading…",
-    },
+  const counts = {
+    raw: raw?.length ?? 0,
+    ranked: ranked?.length ?? 0,
+    drafts: (drafts ?? []).filter(d => (d.decision ?? "pending") === "pending").length,
   };
+  const loading = (tab === "raw" && !raw) || (tab === "ranked" && !ranked) || (tab === "drafts" && !drafts);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar tab={tab} setTab={setTab} counts={counts} syncing={syncing} lastSynced={lastSynced} />
-
-      <main style={{ flex: 1, minWidth: 0, padding: "40px 44px 80px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28 }}>
-          <div>
-            <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, margin: 0, fontWeight: 700 }}>
-              {headers[tab].title}
-            </h1>
-            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)" }}>{headers[tab].subtitle}</p>
+    <div className="gr">
+      <style>{css}</style>
+      <header className="top">
+        <div className="top-in">
+          <div className="brand"><span className="dot" />Gig Radar</div>
+          <nav className="tabs" role="tablist">
+            {TABS.map(t => (
+              <button key={t.key} role="tab" className="tab" aria-selected={tab === t.key} onClick={() => setTab(t.key)}>
+                {t.label}<span className="count">{counts[t.key]}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="sync">
+            <span>{syncing ? "Syncing…" : lastSynced ? `Updated ${lastSynced.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}</span>
+            <button className="btn" onClick={load} disabled={syncing}>Refresh</button>
           </div>
-
-          {tab === "ranked" && (
-            <select
-              value={minScore}
-              onChange={(e) => setMinScore(Number(e.target.value))}
-              style={{
-                fontFamily: "'JetBrains Mono', monospace", fontSize: 12, background: "var(--surface)",
-                color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px",
-              }}
-            >
-              <option value={0}>Score &gt; 0%</option>
-              <option value={40}>Score &gt; 40%</option>
-              <option value={70}>Score &gt; 70%</option>
-              <option value={85}>Score &gt; 85%</option>
-            </select>
-          )}
         </div>
+      </header>
 
-        {tab === "raw" && <RawList rawPostings={rawPostings} />}
-        {tab === "ranked" && <RankedView ranked={ranked} minScore={minScore} setMinScore={setMinScore} />}
-        {tab === "drafts" && <DraftsView drafts={drafts} updateDraft={updateDraft} saveDraft={saveDraft} />}
+      <main>
+        {error && (
+          <div className="banner" role="alert">
+            <span>Can't reach the backend at {API}. Check that FastAPI is running.</span>
+            <button className="btn" onClick={load}>Retry</button>
+          </div>
+        )}
+        {loading ? (error ? null : <Skeleton />) : (
+          <>
+            {tab === "raw" && <PostingBrowser key="raw" items={raw} noun="signals" />}
+            {tab === "ranked" && <PostingBrowser key="ranked" items={ranked} noun="matches" />}
+            {tab === "drafts" && <DraftsView drafts={drafts} updateDraft={updateDraft} saveDraft={saveDraft} toast={toast} />}
+          </>
+        )}
       </main>
+
+      {message && <div className="toast" role="status">{message}</div>}
     </div>
   );
 }
-
-const cardStyle = {
-  background: "var(--surface)",
-  border: "1px solid var(--border)",
-  borderRadius: 12,
-  padding: 18,
-  marginBottom: 14,
-};
-
-export default App;

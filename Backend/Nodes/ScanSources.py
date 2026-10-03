@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 import os
 import re
 
@@ -50,7 +51,7 @@ def scan_tanitjobs(query: str = "Agentic Ai freelance Job"):
         include_domains=["tanitjobs.com"],   # scopes the search to just this site
         search_depth="basic",                       # "advanced" costs more credits, not needed for this
         max_results=10,
-        time_range="week", 
+start_date=(date.today() - timedelta(days=7)).isoformat(),
     )
     return response["results"]
 
@@ -60,7 +61,8 @@ def scan_linkedin(query: str):
         include_domains=["linkedin.com"],
         search_depth="basic",
         max_results=10,
-        time_range="week", 
+        start_date=(date.today() - timedelta(days=7)).isoformat(),
+ 
     )
     results = response["results"]
     # drop profiles (/in/), companies (/company/), articles (/pulse/), etc.
@@ -114,7 +116,7 @@ def scan_indeed(query: str):
         include_domains=["indeed.com"],
         search_depth="basic",
         max_results=10,
-        time_range="week",
+start_date=(date.today() - timedelta(days=7)).isoformat(),
     )
     return response["results"]
 
@@ -125,7 +127,7 @@ def scan_glassdoor(query: str):
         include_domains=["glassdoor.com"],
         search_depth="basic",
         max_results=10,
-        time_range="week",
+start_date=(date.today() - timedelta(days=7)).isoformat(),
     )
     return response["results"]
 
@@ -136,7 +138,7 @@ def scan_keejob(query: str = "Agentic Ai freelance Job"):
         include_domains=["keejob.com"],
         search_depth="basic",
         max_results=10,
-        time_range="week",
+start_date=(date.today() - timedelta(days=7)).isoformat(),
     )
     return response["results"]
 
